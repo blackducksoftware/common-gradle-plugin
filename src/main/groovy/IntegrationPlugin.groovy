@@ -9,6 +9,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.plugins.signing.SigningExtension
 
+import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
 
 class IntegrationPlugin implements Plugin<Project> {
@@ -43,6 +44,9 @@ class IntegrationPlugin implements Plugin<Project> {
         project.artifacts.add('archives', jarTask)
         project.artifacts.add('archives', sourcesJarTask)
         project.artifacts.add('archives', javadocJarTask)
+
+        NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
+        nexusStagingExtension.packageGroup = 'com.blackducksoftware'
 
         SigningExtension signingExtension = project.extensions.getByName('signing')
         signingExtension.required { project.gradle.taskGraph.hasTask("uploadArchives") }
