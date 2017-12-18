@@ -1,0 +1,23 @@
+plugins {
+    id 'groovy'
+    id 'maven'
+    id 'eclipse'
+}
+
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
+
+group = 'com.blackducksoftware.integration'
+version = '0.0.1'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile gradleApi()
+}
