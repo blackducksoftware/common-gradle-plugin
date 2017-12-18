@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
     compile gradleApi()
+    compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

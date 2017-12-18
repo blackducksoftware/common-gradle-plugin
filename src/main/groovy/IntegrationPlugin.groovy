@@ -9,12 +9,15 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.plugins.signing.SigningExtension
 
+import io.codearte.gradle.nexus.NexusStagingPlugin
+
 class IntegrationPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.plugins.apply('java')
         project.plugins.apply('eclipse')
         project.plugins.apply('maven')
         project.plugins.apply('signing')
+        project.plugins.apply(NexusStagingPlugin.class)
 
         project.tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
         project.tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
