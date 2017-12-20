@@ -49,7 +49,7 @@ class IntegrationPlugin implements Plugin<Project> {
         nexusStagingExtension.packageGroup = 'com.blackducksoftware'
 
         SigningExtension signingExtension = project.extensions.getByName('signing')
-        signingExtension.required { project.gradle.taskGraph.hasTask("uploadArchives") }
+        signingExtension.required { project.gradle.taskGraph.hasTask('uploadArchives') }
         signingExtension.sign(archivesConfiguration)
 
         String sonatypeUsername = project.findProperty('sonatypeUsername')
@@ -97,6 +97,12 @@ class IntegrationPlugin implements Plugin<Project> {
                     }
                 }
             }
+        }
+
+        if (!project.version.endsWith('-SNAPSHOT')) {
+            Task uploadArchivesTask = project.getTasks().getByName('uploadArchives')
+            Task closeAndReleaseRepositoryTask = project.getTasks().getByName('closeAndReleaseRepository')
+            closeAndReleaseRepositoryTask.mustRunAfter(uploadArchivesTask)
         }
     }
 }
