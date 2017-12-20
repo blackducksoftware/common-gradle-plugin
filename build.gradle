@@ -9,7 +9,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.4'
+version = '0.0.6'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7

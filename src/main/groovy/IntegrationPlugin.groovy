@@ -99,10 +99,11 @@ class IntegrationPlugin implements Plugin<Project> {
             }
         }
 
-        if (!project.version.endsWith('-SNAPSHOT')) {
-            Task uploadArchivesTask = project.getTasks().getByName('uploadArchives')
-            Task closeAndReleaseRepositoryTask = project.getTasks().getByName('closeAndReleaseRepository')
-            closeAndReleaseRepositoryTask.mustRunAfter(uploadArchivesTask)
+        project.getTasks().getByName('closeRepository').onlyIf {
+            !project.version.endsWith('-SNAPSHOT')
+        }
+        project.getTasks().getByName('releaseRepository').onlyIf {
+            !project.version.endsWith('-SNAPSHOT')
         }
     }
 }
