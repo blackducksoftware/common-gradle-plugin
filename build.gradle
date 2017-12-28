@@ -9,19 +9,37 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.7-SNAPSHOT'
+version = '0.0.7'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 repositories {
     mavenLocal()
-    mavenCentral()
+    jcenter()
+    maven { url 'https://plugins.gradle.org/m2/' }
 }
 
 dependencies {
     compile gradleApi()
+
+    //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
+    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.5.4'
+
+    //https://github.com/hierynomus/license-gradle-plugin
+    compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
+
+    //https://github.com/kt3k/coveralls-gradle-plugin
+    compile 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+
+    //https://github.com/Codearte/gradle-nexus-staging-plugin
     compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.codehaus.groovy:groovy-all:2.4.12'
+    }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

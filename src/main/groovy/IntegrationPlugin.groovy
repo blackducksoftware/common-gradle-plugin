@@ -4,10 +4,13 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.maven.MavenDeployment
 import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.plugins.signing.SigningExtension
+import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
@@ -17,14 +20,23 @@ class IntegrationPlugin implements Plugin<Project> {
         project.plugins.apply('java')
         project.plugins.apply('eclipse')
         project.plugins.apply('maven')
+        project.plugins.apply('maven-publish')
         project.plugins.apply('signing')
+        project.plugins.apply('jacoco')
         project.plugins.apply(NexusStagingPlugin.class)
+        project.plugins.apply(ArtifactoryPlugin.class)
 
         project.tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
         project.tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
         project.group = 'com.blackducksoftware.integration'
 
+        configureForMavenCentralUpload(project)
+        configureForNexusStagingAutoRelease(project)
+        configureForArtifactoryUpload(project)
+    }
+
+    private void configureForMavenCentralUpload(Project project) {
         Task jarTask = project.getTasks().getByName('jar')
         Task classesTask = project.getTasks().getByName('classes')
         Task javadocTask = project.getTasks().getByName('javadoc')
@@ -57,7 +69,7 @@ class IntegrationPlugin implements Plugin<Project> {
         String rootProjectName = project.getRootProject().getName()
         project.uploadArchives {
             repositories {
-                mavenDeployer{
+                mavenDeployer {
                     beforeDeployment { MavenDeployment deployment ->
                         signingExtension.signPom(deployment)
                     }
@@ -98,12 +110,33 @@ class IntegrationPlugin implements Plugin<Project> {
                 }
             }
         }
+    }
 
+    private void configureForNexusStagingAutoRelease(Project project) {
         project.getTasks().getByName('closeRepository').onlyIf {
             !project.version.endsWith('-SNAPSHOT')
         }
         project.getTasks().getByName('releaseRepository').onlyIf {
             !project.version.endsWith('-SNAPSHOT')
+        }
+    }
+
+    private void configureForArtifactoryUpload(Project project) {
+        PublishingExtension publishingExtension = project.extensions.getByName('publishing')
+        publishingExtension.publications {
+            mavenJava(MavenPublication) { from project.components.java }
+        }
+
+        project.convention.plugins.get('artifactory') {
+            publish {
+                contextUrl = project.findProperty('artifactoryUrl')
+                repository {
+                    repoKey = project.findProperty('artifactoryRepo')
+                    username = project.findProperty('artifactoryDeployerUsername')
+                    password = project.findProperty('artifactoryDeployerPassword')
+                }
+                defaults { publications ('mavenJava') }
+            }
         }
     }
 }
