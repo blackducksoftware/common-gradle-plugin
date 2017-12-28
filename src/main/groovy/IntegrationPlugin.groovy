@@ -1,3 +1,4 @@
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -7,6 +8,7 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.plugins.signing.SigningExtension
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
@@ -19,6 +21,12 @@ import nl.javadude.gradle.plugins.license.LicenseExtension
 
 class IntegrationPlugin implements Plugin<Project> {
     void apply(Project project) {
+        project.repositories {
+            jcenter()
+            mavenCentral()
+            maven { url 'https://plugins.gradle.org/m2/' }
+        }
+
         project.plugins.apply('java')
         project.plugins.apply('eclipse')
         project.plugins.apply('maven')
@@ -37,6 +45,8 @@ class IntegrationPlugin implements Plugin<Project> {
         configureForNexusStagingAutoRelease(project)
         configureForArtifactoryUpload(project.rootProject)
         configureLicense(project)
+
+        project.dependencies { testCompile 'junit:junit:4.12' }
     }
 
     private void configureForMavenCentralUpload(Project project) {
@@ -56,6 +66,12 @@ class IntegrationPlugin implements Plugin<Project> {
             from javadocTask.destinationDir
         }
 
+        if (JavaVersion.current().isJava8Compatible()) {
+            project.tasks.withType(Javadoc) {
+                options.addStringOption('Xdoclint:none', '-quiet')
+            }
+        }
+
         project.artifacts.add('archives', jarTask)
         project.artifacts.add('archives', sourcesJarTask)
         project.artifacts.add('archives', javadocJarTask)
@@ -64,7 +80,9 @@ class IntegrationPlugin implements Plugin<Project> {
         nexusStagingExtension.packageGroup = 'com.blackducksoftware'
 
         SigningExtension signingExtension = project.extensions.getByName('signing')
-        signingExtension.required { project.gradle.taskGraph.hasTask('uploadArchives') }
+        signingExtension.required {
+            project.gradle.taskGraph.hasTask('uploadArchives')
+        }
         signingExtension.sign(archivesConfiguration)
 
         String sonatypeUsername = project.findProperty('sonatypeUsername')
@@ -148,7 +166,7 @@ class IntegrationPlugin implements Plugin<Project> {
             "src/test/*.java"
         ])
 
-        //task to apply header to all included files
+        //task to apply the header to all included files
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
     }
