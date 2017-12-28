@@ -4,27 +4,29 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.maven.MavenDeployment
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.plugins.signing.SigningExtension
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+
+import com.hierynomus.gradle.license.LicenseBasePlugin
 
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
+import nl.javadude.gradle.plugins.license.LicenseExtension
 
 class IntegrationPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.plugins.apply('java')
         project.plugins.apply('eclipse')
         project.plugins.apply('maven')
-        project.plugins.apply('maven-publish')
         project.plugins.apply('signing')
         project.plugins.apply('jacoco')
         project.plugins.apply(NexusStagingPlugin.class)
         project.plugins.apply(ArtifactoryPlugin.class)
+        project.plugins.apply(LicenseBasePlugin.class)
 
         project.tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
         project.tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
@@ -33,7 +35,8 @@ class IntegrationPlugin implements Plugin<Project> {
 
         configureForMavenCentralUpload(project)
         configureForNexusStagingAutoRelease(project)
-        configureForArtifactoryUpload(project)
+        configureForArtifactoryUpload(project.rootProject)
+        configureLicense(project)
     }
 
     private void configureForMavenCentralUpload(Project project) {
@@ -122,21 +125,31 @@ class IntegrationPlugin implements Plugin<Project> {
     }
 
     private void configureForArtifactoryUpload(Project project) {
-        PublishingExtension publishingExtension = project.extensions.getByName('publishing')
-        publishingExtension.publications {
-            mavenJava(MavenPublication) { from project.components.java }
-        }
-
-        project.convention.plugins.get('artifactory') {
-            publish {
-                contextUrl = project.findProperty('artifactoryUrl')
-                repository {
-                    repoKey = project.findProperty('artifactoryRepo')
-                    username = project.findProperty('artifactoryDeployerUsername')
-                    password = project.findProperty('artifactoryDeployerPassword')
-                }
-                defaults { publications ('mavenJava') }
+        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
+        artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
+        artifactoryPluginConvention.publish {
+            repository {
+                repoKey = project.findProperty('artifactoryRepo')
+                username = project.findProperty('artifactoryDeployerUsername')
+                password = project.findProperty('artifactoryDeployerPassword')
             }
+            defaults { publishConfigs ('archives') }
         }
+    }
+
+    private void configureLicense(Project project) {
+        LicenseExtension licenseExtension = project.extensions.getByName('license')
+        licenseExtension.headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
+        licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
+        licenseExtension.ignoreFailures = true
+        licenseExtension.includes (["**/*.groovy", "**/*.java"])
+        licenseExtension.excludes ([
+            "/src/test/*.groovy",
+            "src/test/*.java"
+        ])
+
+        //task to apply header to all included files
+        Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
+        project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
     }
 }
