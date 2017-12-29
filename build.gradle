@@ -11,7 +11,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.11'
+version = '0.0.12'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -64,6 +64,23 @@ license {
 
 tasks.getByName('build').dependsOn(licenseFormatMain)
 
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}
+
+gradle.taskGraph.whenReady {
+    if (gradle.taskGraph.hasTask(":uploadArchives")) {
+        println "Uploading ${rootProject.name} version ${version} to maven central."
+    }
+}
+
+signing {
+    required { gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
 def artifactoryRepo = artifactorySnapshotRepo
 if (!project.version.endsWith('-SNAPSHOT')) {
     artifactoryRepo = artifactoryReleaseRepo
@@ -77,6 +94,7 @@ artifactory {
             username = artifactoryDeployerUsername
             password = artifactoryDeployerPassword
         }
+        defaults { publishConfigs ('archives') }
     }
 }
 
@@ -122,21 +140,4 @@ uploadArchives {
             }
         }
     }
-}
-
-gradle.taskGraph.whenReady {
-    if (gradle.taskGraph.hasTask(":uploadArchives")) {
-        println "Uploading ${rootProject.name} version ${version} to maven central."
-    }
-}
-
-artifacts {
-    archives jar
-    archives sourcesJar
-    archives javadocJar
-}
-
-signing {
-    required { gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
 }
