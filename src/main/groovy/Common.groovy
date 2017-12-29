@@ -33,6 +33,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+import org.kt3k.gradle.plugin.CoverallsPlugin
 
 import com.hierynomus.gradle.license.LicenseBasePlugin
 
@@ -51,6 +52,7 @@ abstract class Common implements Plugin<Project> {
         project.plugins.apply('maven')
         project.plugins.apply('jacoco')
         project.plugins.apply(LicenseBasePlugin.class)
+        project.plugins.apply(CoverallsPlugin.class)
         project.plugins.apply(ArtifactoryPlugin.class)
 
         project.tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
