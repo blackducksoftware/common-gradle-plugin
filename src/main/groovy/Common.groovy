@@ -70,8 +70,8 @@ abstract class Common implements Plugin<Project> {
         Configuration archivesConfiguration = project.getConfigurations().getByName('archives')
         JavaPluginConvention javaPluginConvention = project.getConvention().getPlugin(JavaPluginConvention.class)
 
-        javaPluginConvention.sourceCompatibility = 1.7
-        javaPluginConvention.targetCompatibility = 1.7
+        javaPluginConvention.sourceCompatibility = 1.8
+        javaPluginConvention.targetCompatibility = 1.8
 
         Task sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar, dependsOn: classesTask) {
             classifier = 'sources'
