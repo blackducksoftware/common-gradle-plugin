@@ -3,6 +3,7 @@ plugins {
     id 'maven'
     id 'signing'
     id 'eclipse'
+    id 'com.jfrog.artifactory' version '4.6.0'
     id 'com.github.hierynomus.license' version '0.14.0'
 }
 
@@ -10,7 +11,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.10'
+version = '0.0.11'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -25,7 +26,7 @@ dependencies {
     compile gradleApi()
 
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
-    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.5.4'
+    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.6.0'
 
     //https://github.com/hierynomus/license-gradle-plugin
     compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
@@ -62,6 +63,22 @@ license {
 }
 
 tasks.getByName('build').dependsOn(licenseFormatMain)
+
+def artifactoryRepo = artifactorySnapshotRepo
+if (!project.version.endsWith('-SNAPSHOT')) {
+    artifactoryRepo = artifactoryReleaseRepo
+}
+
+artifactory {
+    publish {
+        contextUrl = artifactoryUrl
+        repository {
+            repoKey = artifactoryRepo
+            username = artifactoryDeployerUsername
+            password = artifactoryDeployerPassword
+        }
+    }
+}
 
 uploadArchives {
     repositories {
