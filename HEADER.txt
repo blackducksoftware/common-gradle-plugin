@@ -1,4 +1,4 @@
-${project.name}
+${projectName}
 
 Copyright (C) ${year} Black Duck Software, Inc.
 http://www.blackducksoftware.com/
