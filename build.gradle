@@ -3,13 +3,14 @@ plugins {
     id 'maven'
     id 'signing'
     id 'eclipse'
+    id 'com.github.hierynomus.license' version '0.14.0'
 }
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.9-SNAPSHOT'
+version = '0.0.9'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -36,11 +37,7 @@ dependencies {
     compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
 }
 
-configurations.all {
-    resolutionStrategy {
-        force 'org.codehaus.groovy:groovy-all:2.4.12'
-    }
-}
+configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -51,6 +48,20 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
+
+license {
+    headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.projectName = project.name
+    ignoreFailures = true
+    includes (['**/*.groovy', '**/*.java'])
+    excludes ([
+        '/src/test/*.groovy',
+        'src/test/*.java'
+    ])
+}
+
+tasks.getByName('build').dependsOn(licenseFormatMain)
 
 uploadArchives {
     repositories {
