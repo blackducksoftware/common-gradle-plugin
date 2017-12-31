@@ -91,13 +91,10 @@ abstract class Common implements Plugin<Project> {
             }
         }
 
-        def jacocoTestReportTask = project.tasks.getByName('jacocoTestReport')
-        jacocoTestReportTask {
-            reports {
-                // coveralls plugin depends on xml format report
-                xml.enabled = true
-                html.enabled = true
-            }
+        project.tasks.getByName('jacocoTestReport').reports {
+            // coveralls plugin depends on xml format report
+            xml.enabled = true
+            html.enabled = true
         }
 
         project.artifacts.add('archives', jarTask)
