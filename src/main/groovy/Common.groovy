@@ -22,6 +22,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import org.apache.commons.lang.StringUtils
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -43,7 +44,7 @@ import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
     void apply(Project project) {
-        if (project.version == 'unspecified') {
+        if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
             throw new GradleException('The version must be specified before applying this plugin.')
         }
 
@@ -130,6 +131,7 @@ abstract class Common implements Plugin<Project> {
     }
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
+        println "will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
         artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
         artifactoryPluginConvention.publish {
