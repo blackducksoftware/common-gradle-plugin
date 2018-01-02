@@ -53,6 +53,7 @@ class LibraryPlugin extends Common {
             artifactoryRepo = project.findProperty('artifactoryReleaseRepo')
         }
 
+        println "will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
         configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs ('archives') })
     }
 
