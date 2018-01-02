@@ -11,7 +11,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.15-SNAPSHOT'
+version = '0.0.15'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -26,6 +26,7 @@ dependencies {
     compile gradleApi()
 
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
+    //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
     compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.6.0'
 
     //https://github.com/hierynomus/license-gradle-plugin

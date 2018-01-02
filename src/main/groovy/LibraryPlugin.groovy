@@ -1,7 +1,7 @@
 /*
  * common-gradle-plugin
  *
- * Copyright (C) 2017 Black Duck Software, Inc.
+ * Copyright (C) 2018 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
  *
@@ -26,7 +26,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.maven.MavenDeployment
 import org.gradle.plugins.signing.SigningExtension
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
@@ -54,16 +53,7 @@ class LibraryPlugin extends Common {
             artifactoryRepo = project.findProperty('artifactoryReleaseRepo')
         }
 
-        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-        artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
-        artifactoryPluginConvention.publish {
-            repository {
-                repoKey = artifactoryRepo
-                username = project.findProperty('artifactoryDeployerUsername')
-                password = project.findProperty('artifactoryDeployerPassword')
-            }
-            defaults { publishConfigs ('archives') }
-        }
+        configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs ('archives') })
     }
 
     private void configureForMavenCentralUpload(Project project) {

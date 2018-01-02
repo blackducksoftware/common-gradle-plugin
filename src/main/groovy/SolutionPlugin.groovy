@@ -1,7 +1,7 @@
 /*
  * common-gradle-plugin
  *
- * Copyright (C) 2017 Black Duck Software, Inc.
+ * Copyright (C) 2018 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
  *
@@ -23,7 +23,6 @@
  * under the License.
  */
 import org.gradle.api.Project
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 
 /**
  * This plugin is meant for final integration solutions. They can create the
@@ -38,15 +37,7 @@ class SolutionPlugin extends Common {
     }
 
     private void configureForArtifactoryUpload(Project project) {
-        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-        artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
-        artifactoryPluginConvention.publish {
-            repository {
-                repoKey = project.findProperty('artifactoryRepo')
-                username = project.findProperty('artifactoryDeployerUsername')
-                password = project.findProperty('artifactoryDeployerPassword')
-            }
-            defaults { publications ('mavenJava') }
-        }
+        String artifactoryRepo = project.findProperty('artifactoryRepo')
+        configureDefaultsForArtifactory(project, artifactoryRepo)
     }
 }

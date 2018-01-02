@@ -1,7 +1,7 @@
 /*
  * common-gradle-plugin
  *
- * Copyright (C) 2017 Black Duck Software, Inc.
+ * Copyright (C) 2018 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
  *
  *
@@ -22,6 +22,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -33,6 +34,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.kt3k.gradle.plugin.CoverallsPlugin
 
 import com.hierynomus.gradle.license.LicenseBasePlugin
@@ -41,6 +43,10 @@ import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
     void apply(Project project) {
+        if (project.version == 'unspecified') {
+            throw new GradleException('The version must be specified before applying this plugin.')
+        }
+
         project.repositories {
             jcenter()
             mavenCentral()
@@ -117,5 +123,25 @@ abstract class Common implements Plugin<Project> {
         //task to apply the header to all included files
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
+    }
+
+    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
+        configureDefaultsForArtifactory(project, artifactoryRepo, null)
+    }
+
+    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
+        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
+        artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
+        artifactoryPluginConvention.publish {
+            repository {
+                repoKey = artifactoryRepo
+                username = project.findProperty('artifactoryDeployerUsername')
+                password = project.findProperty('artifactoryDeployerPassword')
+            }
+        }
+
+        if (defaultsClosure != null) {
+            artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
+        }
     }
 }
