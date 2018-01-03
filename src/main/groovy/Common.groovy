@@ -62,8 +62,18 @@ abstract class Common implements Plugin<Project> {
         project.plugins.apply(CoverallsPlugin.class)
         project.plugins.apply(ArtifactoryPlugin.class)
 
-        project.tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-        project.tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
+        project.tasks.withType(JavaCompile) {
+            options.encoding = 'UTF-8'
+            if(project.hasProperty('jvmArgs')) {
+                options.compilerArgs.addAll(project.jvmArgs.split(','))
+            }
+        }
+        project.tasks.withType(GroovyCompile) {
+            options.encoding = 'UTF-8'
+            if(project.hasProperty('jvmArgs')) {
+                options.compilerArgs.addAll(project.jvmArgs.split(','))
+            }
+        }
 
         project.group = 'com.blackducksoftware.integration'
         project.dependencies { testCompile 'junit:junit:4.12' }
