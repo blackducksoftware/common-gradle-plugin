@@ -64,13 +64,13 @@ abstract class Common implements Plugin<Project> {
 
         project.tasks.withType(JavaCompile) {
             options.encoding = 'UTF-8'
-            if(project.hasProperty('jvmArgs')) {
+            if (project.hasProperty('jvmArgs')) {
                 options.compilerArgs.addAll(project.jvmArgs.split(','))
             }
         }
         project.tasks.withType(GroovyCompile) {
             options.encoding = 'UTF-8'
-            if(project.hasProperty('jvmArgs')) {
+            if (project.hasProperty('jvmArgs')) {
                 options.compilerArgs.addAll(project.jvmArgs.split(','))
             }
         }
