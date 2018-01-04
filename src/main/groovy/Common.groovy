@@ -43,117 +43,120 @@ import com.hierynomus.gradle.license.LicenseBasePlugin
 import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
-    void apply(Project project) {
-        if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
-            throw new GradleException('The version must be specified before applying this plugin.')
-        }
+	void apply(Project project) {
+		if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
+			throw new GradleException('The version must be specified before applying this plugin.')
+		}
 
-        project.repositories {
-            jcenter()
-            mavenCentral()
-            maven { url 'https://plugins.gradle.org/m2/' }
-        }
+		project.repositories {
+			jcenter()
+			mavenCentral()
+			maven { url 'https://plugins.gradle.org/m2/' }
+		}
 
-        project.plugins.apply('java')
-        project.plugins.apply('eclipse')
-        project.plugins.apply('maven')
-        project.plugins.apply('jacoco')
-        project.plugins.apply(LicenseBasePlugin.class)
-        project.plugins.apply(CoverallsPlugin.class)
-        project.plugins.apply(ArtifactoryPlugin.class)
+		project.plugins.apply('java')
+		project.plugins.apply('eclipse')
+		project.plugins.apply('maven')
+		project.plugins.apply('jacoco')
+		project.plugins.apply(LicenseBasePlugin.class)
+		project.plugins.apply(CoverallsPlugin.class)
+		project.plugins.apply(ArtifactoryPlugin.class)
 
-        project.tasks.withType(JavaCompile) {
-            options.encoding = 'UTF-8'
-            if (project.hasProperty('jvmArgs')) {
-                options.compilerArgs.addAll(project.jvmArgs.split(','))
-            }
-        }
-        project.tasks.withType(GroovyCompile) {
-            options.encoding = 'UTF-8'
-            if (project.hasProperty('jvmArgs')) {
-                options.compilerArgs.addAll(project.jvmArgs.split(','))
-            }
-        }
+		project.tasks.withType(JavaCompile) {
+			options.encoding = 'UTF-8'
+			if (project.hasProperty('jvmArgs')) {
+				options.compilerArgs.addAll(project.jvmArgs.split(','))
+			}
+		}
+		project.tasks.withType(GroovyCompile) {
+			options.encoding = 'UTF-8'
+			if (project.hasProperty('jvmArgs')) {
+				options.compilerArgs.addAll(project.jvmArgs.split(','))
+			}
+		}
 
-        project.group = 'com.blackducksoftware.integration'
-        project.dependencies { testCompile 'junit:junit:4.12' }
+		project.group = 'com.blackducksoftware.integration'
+		project.dependencies { testCompile 'junit:junit:4.12' }
 
-        configureForJava(project)
-        configureForLicense(project)
-    }
+		configureForJava(project)
+		configureForLicense(project)
+	}
 
-    public void configureForJava(Project project) {
-        Task jarTask = project.getTasks().getByName('jar')
-        Task classesTask = project.getTasks().getByName('classes')
-        Task javadocTask = project.getTasks().getByName('javadoc')
-        Configuration archivesConfiguration = project.getConfigurations().getByName('archives')
-        JavaPluginConvention javaPluginConvention = project.getConvention().getPlugin(JavaPluginConvention.class)
+	public void configureForJava(Project project) {
+		Task jarTask = project.tasks.getByName('jar')
+		Task classesTask = project.tasks.getByName('classes')
+		Task javadocTask = project.tasks.getByName('javadoc')
+		Configuration archivesConfiguration = project.configurations.getByName('archives')
+		JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
-        javaPluginConvention.sourceCompatibility = 1.8
-        javaPluginConvention.targetCompatibility = 1.8
+		javaPluginConvention.sourceCompatibility = 1.8
+		javaPluginConvention.targetCompatibility = 1.8
 
-        Task sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar, dependsOn: classesTask) {
-            classifier = 'sources'
-            from javaPluginConvention.sourceSets.main.allSource
-        }
+		Task sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar, dependsOn: classesTask) {
+			classifier = 'sources'
+			from javaPluginConvention.sourceSets.main.allSource
+		}
 
-        Task javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar, dependsOn: javadocTask) {
-            classifier = 'javadoc'
-            from javadocTask.destinationDir
-        }
+		Task javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar, dependsOn: javadocTask) {
+			classifier = 'javadoc'
+			from javadocTask.destinationDir
+		}
 
-        if (JavaVersion.current().isJava8Compatible()) {
-            project.tasks.withType(Javadoc) {
-                options.addStringOption('Xdoclint:none', '-quiet')
-            }
-        }
+		if (JavaVersion.current().isJava8Compatible()) {
+			project.tasks.withType(Javadoc) {
+				options.addStringOption('Xdoclint:none', '-quiet')
+			}
+		}
 
-        project.tasks.getByName('jacocoTestReport').reports {
-            // coveralls plugin depends on xml format report
-            xml.enabled = true
-            html.enabled = true
-        }
+		project.tasks.getByName('jacocoTestReport').reports {
+			// coveralls plugin depends on xml format report
+			xml.enabled = true
+			html.enabled = true
+		}
 
-        project.artifacts.add('archives', jarTask)
-        project.artifacts.add('archives', sourcesJarTask)
-        project.artifacts.add('archives', javadocJarTask)
-    }
+		project.artifacts.add('archives', jarTask)
+		project.artifacts.add('archives', sourcesJarTask)
+		project.artifacts.add('archives', javadocJarTask)
+	}
 
-    public void configureForLicense(Project project) {
-        LicenseExtension licenseExtension = project.extensions.getByName('license')
-        licenseExtension.headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
-        licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        licenseExtension.ext.projectName = project.name
-        licenseExtension.ignoreFailures = true
-        licenseExtension.includes (['**/*.groovy', '**/*.java'])
-        licenseExtension.excludes ([
-            '/src/test/*.groovy',
-            'src/test/*.java'
-        ])
+	public void configureForLicense(Project project) {
+		LicenseExtension licenseExtension = project.extensions.getByName('license')
+		licenseExtension.headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
+		licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
+		licenseExtension.ext.projectName = project.name
+		licenseExtension.ignoreFailures = true
+		licenseExtension.includes (['**/*.groovy', '**/*.java'])
+		licenseExtension.excludes ([
+			'/src/test/*.groovy',
+			'src/test/*.java'
+		])
 
-        //task to apply the header to all included files
-        Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
-        project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
-    }
+		//task to apply the header to all included files
+		Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
+		project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
+	}
 
-    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
-        configureDefaultsForArtifactory(project, artifactoryRepo, null)
-    }
+	public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
+		configureDefaultsForArtifactory(project, artifactoryRepo, null)
+	}
 
-    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
-        println "will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
-        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-        artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
-        artifactoryPluginConvention.publish {
-            repository {
-                repoKey = artifactoryRepo
-                username = project.findProperty('artifactoryDeployerUsername')
-                password = project.findProperty('artifactoryDeployerPassword')
-            }
-        }
+	public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
+		ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
+		artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
+		artifactoryPluginConvention.publish {
+			repository {
+				repoKey = artifactoryRepo
+				username = project.findProperty('artifactoryDeployerUsername')
+				password = project.findProperty('artifactoryDeployerPassword')
+			}
+		}
 
-        if (defaultsClosure != null) {
-            artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
-        }
-    }
+		if (defaultsClosure != null) {
+			artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
+		}
+
+		project.tasks.getByName('artifactoryPublish').dependsOn {
+			println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
+		}
+	}
 }

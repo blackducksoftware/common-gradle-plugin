@@ -1,3 +1,8 @@
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0' }
+}
+
 plugins {
     id 'groovy'
     id 'maven'
@@ -6,6 +11,8 @@ plugins {
     id 'com.jfrog.artifactory' version '4.6.0'
     id 'com.github.hierynomus.license' version '0.14.0'
 }
+
+apply plugin: 'io.codearte.nexus-staging'
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
@@ -39,7 +46,8 @@ dependencies {
     compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
 }
 
-configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }
+configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12'
+    } }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -71,15 +79,19 @@ artifacts {
     archives javadocJar
 }
 
-gradle.taskGraph.whenReady {
-    if (gradle.taskGraph.hasTask(":uploadArchives")) {
-        println "Uploading ${rootProject.name} version ${version} to maven central."
-    }
-}
-
 signing {
     required { gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
+}
+
+nexusStaging { packageGroup = 'com.blackducksoftware' }
+
+closeRepository.onlyIf {
+    !project.version.endsWith('-SNAPSHOT')
+}
+
+releaseRepository.onlyIf {
+    !project.version.endsWith('-SNAPSHOT')
 }
 
 def artifactoryRepo = artifactorySnapshotRepo
@@ -95,14 +107,23 @@ artifactory {
             username = artifactoryDeployerUsername
             password = artifactoryDeployerPassword
         }
-        defaults { publishConfigs ('archives') }
+        defaults {
+            publishConfigs ('archives')
+        }
     }
 }
+
+artifactoryPublish.dependsOn {
+    println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
+}
+
+uploadArchives.dependsOn { println "Uploading ${rootProject.name} version ${version} to maven central." }
 
 uploadArchives {
     repositories {
         mavenDeployer {
-            beforeDeployment { MavenDeployment deployment ->
+            beforeDeployment {
+                MavenDeployment deployment ->
                 signing.signPom(deployment)
             }
             repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
@@ -134,7 +155,9 @@ uploadArchives {
                         email 'bdsoss@blackducksoftware.com'
                         organization 'Black Duck Software, Inc.'
                         organizationUrl 'http://www.blackducksoftware.com'
-                        roles { role 'developer' }
+                        roles {
+                            role 'developer'
+                        }
                         timezone 'America/New_York'
                     }
                 }
