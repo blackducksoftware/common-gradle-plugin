@@ -42,7 +42,11 @@ class LibraryPlugin extends Common {
         project.plugins.apply('signing')
         project.plugins.apply(NexusStagingPlugin.class)
 
-        project.tasks.create(name: 'deployLibrary', dependsOn: 'uploadArchives', 'artifactoryPublish', 'closeAndReleaseRepository')
+        project.tasks.create(name: 'deployLibrary', dependsOn: [
+            'uploadArchives',
+            'artifactoryPublish',
+            'closeAndReleaseRepository'
+        ])
 
         configureForArtifactoryUpload(project)
         configureForMavenCentralUpload(project)
@@ -121,6 +125,8 @@ class LibraryPlugin extends Common {
 
     private void configureForNexusStagingAutoRelease(Project project) {
         project.tasks.getByName('closeRepository').onlyIf { !project.isSnapshot }
+        project.tasks.getByName('closeRepository').dependsOn 'uploadArchives'
         project.tasks.getByName('releaseRepository').onlyIf { !project.isSnapshot }
+        project.tasks.getByName('releaseRepository').dependsOn 'uploadArchives'
     }
 }

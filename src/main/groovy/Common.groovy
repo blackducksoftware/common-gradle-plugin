@@ -148,6 +148,10 @@ abstract class Common implements Plugin<Project> {
     }
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
+        configureDefaultsForArtifactory(project, artifactoryRepo, null)
+    }
+
+    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
         artifactoryPluginConvention.contextUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
         artifactoryPluginConvention.publish {
@@ -156,6 +160,10 @@ abstract class Common implements Plugin<Project> {
                 username = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
                 password = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
             }
+        }
+
+        if (defaultsClosure != null) {
+            artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
         }
 
         project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
