@@ -36,95 +36,91 @@ import io.codearte.gradle.nexus.NexusStagingPlugin
  * determine the appropriate destination for each.
  */
 class LibraryPlugin extends Common {
-	void apply(Project project) {
-		super.apply(project)
+    void apply(Project project) {
+        super.apply(project)
 
-		project.plugins.apply('signing')
-		project.plugins.apply(NexusStagingPlugin.class)
+        project.plugins.apply('signing')
+        project.plugins.apply(NexusStagingPlugin.class)
 
-		configureForArtifactoryUpload(project)
-		configureForMavenCentralUpload(project)
-		configureForNexusStagingAutoRelease(project)
-	}
+        project.tasks.create(name: 'deployLibrary', dependsOn: 'uploadArchives', 'artifactoryPublish', 'closeAndReleaseRepository')
 
-	private void configureForArtifactoryUpload(Project project) {
-		String artifactoryRepo = project.findProperty('artifactorySnapshotRepo')
-		if (!project.version.endsWith('-SNAPSHOT')) {
-			artifactoryRepo = project.findProperty('artifactoryReleaseRepo')
-		}
+        configureForArtifactoryUpload(project)
+        configureForMavenCentralUpload(project)
+        configureForNexusStagingAutoRelease(project)
+    }
 
-		configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs ('archives') })
-	}
+    private void configureForArtifactoryUpload(Project project) {
+        String artifactoryRepo = project.findProperty(Common.PROPERTY_ARTIFACTORY_SNAPSHOT_REPO)
+        if (!project.isSnapshot) {
+            artifactoryRepo = project.findProperty(Common.PROPERTY_ARTIFACTORY_RELEASE_REPO)
+        }
 
-	private void configureForMavenCentralUpload(Project project) {
-		NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
-		nexusStagingExtension.packageGroup = 'com.blackducksoftware'
+        configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs ('archives') })
+    }
 
-		Configuration archivesConfiguration = project.configurations.getByName('archives')
-		SigningExtension signingExtension = project.extensions.getByName('signing')
-		signingExtension.required {
-			project.gradle.taskGraph.hasTask('uploadArchives')
-		}
-		signingExtension.sign(archivesConfiguration)
+    private void configureForMavenCentralUpload(Project project) {
+        NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
+        nexusStagingExtension.packageGroup = 'com.blackducksoftware'
 
-		String sonatypeUsername = project.findProperty('sonatypeUsername')
-		String sonatypePassword = project.findProperty('sonatypePassword')
-		String rootProjectName = project.getRootProject().getName()
-		project.uploadArchives {
-			repositories {
-				mavenDeployer {
-					beforeDeployment { MavenDeployment deployment ->
-						signingExtension.signPom(deployment)
-					}
-					repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-						authentication(userName: sonatypeUsername, password: sonatypePassword)
-					}
-					snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-						authentication(userName: sonatypeUsername, password: sonatypePassword)
-					}
-					pom.project {
-						name project.rootProject.name
-						description project.rootProject.description
-						url "https://www.github.com/blackducksoftware/${rootProjectName}"
-						packaging 'jar'
-						scm {
-							connection "scm:git:git://github.com/blackducksoftware/${rootProjectName}.git"
-							developerConnection "scm:git:git@github.com:blackducksoftware/${rootProjectName}.git"
-							url "https://www.github.com/blackducksoftware/${rootProjectName}"
-						}
-						licenses {
-							license {
-								name 'Apache License 2.0'
-								url 'http://www.apache.org/licenses/LICENSE-2.0'
-							}
-						}
-						developers {
-							developer {
-								id 'blackduckoss'
-								name 'Black Duck OSS'
-								email 'bdsoss@blackducksoftware.com'
-								organization 'Black Duck Software, Inc.'
-								organizationUrl 'http://www.blackducksoftware.com'
-								roles { role 'developer' }
-								timezone 'America/New_York'
-							}
-						}
-					}
-				}
-			}
-		}
+        Configuration archivesConfiguration = project.configurations.getByName('archives')
+        SigningExtension signingExtension = project.extensions.getByName('signing')
+        signingExtension.required {
+            project.gradle.taskGraph.hasTask('uploadArchives')
+        }
+        signingExtension.sign(archivesConfiguration)
 
-		project.tasks.getByName('uploadArchives').dependsOn {
-			println "uploadArchives will attempt uploading ${project.name}:${project.version} to maven central"
-		}
-	}
+        String sonatypeUsername = project.findProperty(Common.PROPERTY_SONATYPE_USERNAME)
+        String sonatypePassword = project.findProperty(Common.PROPERTY_SONATYPE_PASSWORD)
+        String rootProjectName = project.getRootProject().getName()
+        project.uploadArchives {
+            repositories {
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment ->
+                        signingExtension.signPom(deployment)
+                    }
+                    repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+                        authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
+                    snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                        authentication(userName: sonatypeUsername, password: sonatypePassword)
+                    }
+                    pom.project {
+                        name project.rootProject.name
+                        description project.rootProject.description
+                        url "https://www.github.com/blackducksoftware/${rootProjectName}"
+                        packaging 'jar'
+                        scm {
+                            connection "scm:git:git://github.com/blackducksoftware/${rootProjectName}.git"
+                            developerConnection "scm:git:git@github.com:blackducksoftware/${rootProjectName}.git"
+                            url "https://www.github.com/blackducksoftware/${rootProjectName}"
+                        }
+                        licenses {
+                            license {
+                                name 'Apache License 2.0'
+                                url 'http://www.apache.org/licenses/LICENSE-2.0'
+                            }
+                        }
+                        developers {
+                            developer {
+                                id 'blackduckoss'
+                                name 'Black Duck OSS'
+                                email 'bdsoss@blackducksoftware.com'
+                                organization 'Black Duck Software, Inc.'
+                                organizationUrl 'http://www.blackducksoftware.com'
+                                roles { role 'developer' }
+                                timezone 'America/New_York'
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-	private void configureForNexusStagingAutoRelease(Project project) {
-		project.tasks.getByName('closeRepository').onlyIf {
-			!project.version.endsWith('-SNAPSHOT')
-		}
-		project.tasks.getByName('releaseRepository').onlyIf {
-			!project.version.endsWith('-SNAPSHOT')
-		}
-	}
+        project.tasks.getByName('uploadArchives').dependsOn { println "uploadArchives will attempt uploading ${project.name}:${project.version} to maven central" }
+    }
+
+    private void configureForNexusStagingAutoRelease(Project project) {
+        project.tasks.getByName('closeRepository').onlyIf { !project.isSnapshot }
+        project.tasks.getByName('releaseRepository').onlyIf { !project.isSnapshot }
+    }
 }

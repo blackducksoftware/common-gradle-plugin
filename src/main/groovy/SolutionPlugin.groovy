@@ -33,11 +33,13 @@ class SolutionPlugin extends Common {
     void apply(Project project) {
         super.apply(project)
 
+        project.tasks.create(name: 'deploySolution', dependsOn: 'artifactoryPublish')
+
         configureForArtifactoryUpload(project)
     }
 
     private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.findProperty('artifactoryRepo')
+        String artifactoryRepo = project.findProperty(Common.PROPERTY_ARTIFACTORY_REPO)
         configureDefaultsForArtifactory(project, artifactoryRepo)
     }
 }

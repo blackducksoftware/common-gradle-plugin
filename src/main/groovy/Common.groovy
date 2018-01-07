@@ -43,120 +43,121 @@ import com.hierynomus.gradle.license.LicenseBasePlugin
 import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
-	void apply(Project project) {
-		if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
-			throw new GradleException('The version must be specified before applying this plugin.')
-		}
+    public static final PROPERTY_ARTIFACTORY_URL = 'artifactoryUrl'
+    public static final PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
+    public static final PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactorySnapshotRepo'
+    public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
+    public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
+    public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
+    public static final PROPERTY_SONATYPE_USERNAME = 'sonatypeUsername'
+    public static final PROPERTY_SONATYPE_PASSWORD = 'sonatypePassword'
 
-		project.repositories {
-			jcenter()
-			mavenCentral()
-			maven { url 'https://plugins.gradle.org/m2/' }
-		}
+    void apply(Project project) {
+        if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
+            throw new GradleException('The version must be specified before applying this plugin.')
+        }
 
-		project.plugins.apply('java')
-		project.plugins.apply('eclipse')
-		project.plugins.apply('maven')
-		project.plugins.apply('jacoco')
-		project.plugins.apply(LicenseBasePlugin.class)
-		project.plugins.apply(CoverallsPlugin.class)
-		project.plugins.apply(ArtifactoryPlugin.class)
+        project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
 
-		project.tasks.withType(JavaCompile) {
-			options.encoding = 'UTF-8'
-			if (project.hasProperty('jvmArgs')) {
-				options.compilerArgs.addAll(project.jvmArgs.split(','))
-			}
-		}
-		project.tasks.withType(GroovyCompile) {
-			options.encoding = 'UTF-8'
-			if (project.hasProperty('jvmArgs')) {
-				options.compilerArgs.addAll(project.jvmArgs.split(','))
-			}
-		}
+        project.repositories {
+            jcenter()
+            mavenCentral()
+            maven { url 'https://plugins.gradle.org/m2/' }
+        }
 
-		project.group = 'com.blackducksoftware.integration'
-		project.dependencies { testCompile 'junit:junit:4.12' }
+        project.plugins.apply('java')
+        project.plugins.apply('eclipse')
+        project.plugins.apply('maven')
+        project.plugins.apply('jacoco')
+        project.plugins.apply(LicenseBasePlugin.class)
+        project.plugins.apply(CoverallsPlugin.class)
+        project.plugins.apply(ArtifactoryPlugin.class)
 
-		configureForJava(project)
-		configureForLicense(project)
-	}
+        project.tasks.withType(JavaCompile) {
+            options.encoding = 'UTF-8'
+            if (project.hasProperty('jvmArgs')) {
+                options.compilerArgs.addAll(project.jvmArgs.split(','))
+            }
+        }
+        project.tasks.withType(GroovyCompile) {
+            options.encoding = 'UTF-8'
+            if (project.hasProperty('jvmArgs')) {
+                options.compilerArgs.addAll(project.jvmArgs.split(','))
+            }
+        }
 
-	public void configureForJava(Project project) {
-		Task jarTask = project.tasks.getByName('jar')
-		Task classesTask = project.tasks.getByName('classes')
-		Task javadocTask = project.tasks.getByName('javadoc')
-		Configuration archivesConfiguration = project.configurations.getByName('archives')
-		JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
+        project.group = 'com.blackducksoftware.integration'
+        project.dependencies { testCompile 'junit:junit:4.12' }
 
-		javaPluginConvention.sourceCompatibility = 1.8
-		javaPluginConvention.targetCompatibility = 1.8
+        configureForJava(project)
+        configureForLicense(project)
+    }
 
-		Task sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar, dependsOn: classesTask) {
-			classifier = 'sources'
-			from javaPluginConvention.sourceSets.main.allSource
-		}
+    public void configureForJava(Project project) {
+        Task jarTask = project.tasks.getByName('jar')
+        Task classesTask = project.tasks.getByName('classes')
+        Task javadocTask = project.tasks.getByName('javadoc')
+        Configuration archivesConfiguration = project.configurations.getByName('archives')
+        JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
-		Task javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar, dependsOn: javadocTask) {
-			classifier = 'javadoc'
-			from javadocTask.destinationDir
-		}
+        javaPluginConvention.sourceCompatibility = 1.8
+        javaPluginConvention.targetCompatibility = 1.8
 
-		if (JavaVersion.current().isJava8Compatible()) {
-			project.tasks.withType(Javadoc) {
-				options.addStringOption('Xdoclint:none', '-quiet')
-			}
-		}
+        Task sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar, dependsOn: classesTask) {
+            classifier = 'sources'
+            from javaPluginConvention.sourceSets.main.allSource
+        }
 
-		project.tasks.getByName('jacocoTestReport').reports {
-			// coveralls plugin depends on xml format report
-			xml.enabled = true
-			html.enabled = true
-		}
+        Task javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar, dependsOn: javadocTask) {
+            classifier = 'javadoc'
+            from javadocTask.destinationDir
+        }
 
-		project.artifacts.add('archives', jarTask)
-		project.artifacts.add('archives', sourcesJarTask)
-		project.artifacts.add('archives', javadocJarTask)
-	}
+        if (JavaVersion.current().isJava8Compatible()) {
+            project.tasks.withType(Javadoc) {
+                options.addStringOption('Xdoclint:none', '-quiet')
+            }
+        }
 
-	public void configureForLicense(Project project) {
-		LicenseExtension licenseExtension = project.extensions.getByName('license')
-		licenseExtension.headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
-		licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
-		licenseExtension.ext.projectName = project.name
-		licenseExtension.ignoreFailures = true
-		licenseExtension.includes (['**/*.groovy', '**/*.java'])
-		licenseExtension.excludes ([
-			'/src/test/*.groovy',
-			'src/test/*.java'
-		])
+        project.tasks.getByName('jacocoTestReport').reports {
+            // coveralls plugin depends on xml format report
+            xml.enabled = true
+            html.enabled = true
+        }
 
-		//task to apply the header to all included files
-		Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
-		project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
-	}
+        project.artifacts.add('archives', jarTask)
+        project.artifacts.add('archives', sourcesJarTask)
+        project.artifacts.add('archives', javadocJarTask)
+    }
 
-	public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
-		configureDefaultsForArtifactory(project, artifactoryRepo, null)
-	}
+    public void configureForLicense(Project project) {
+        LicenseExtension licenseExtension = project.extensions.getByName('license')
+        licenseExtension.headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
+        licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
+        licenseExtension.ext.projectName = project.name
+        licenseExtension.ignoreFailures = true
+        licenseExtension.includes (['**/*.groovy', '**/*.java'])
+        licenseExtension.excludes ([
+            '/src/test/*.groovy',
+            'src/test/*.java'
+        ])
 
-	public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
-		ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-		artifactoryPluginConvention.contextUrl = project.findProperty('artifactoryUrl')
-		artifactoryPluginConvention.publish {
-			repository {
-				repoKey = artifactoryRepo
-				username = project.findProperty('artifactoryDeployerUsername')
-				password = project.findProperty('artifactoryDeployerPassword')
-			}
-		}
+        //task to apply the header to all included files
+        Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
+        project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
+    }
 
-		if (defaultsClosure != null) {
-			artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
-		}
+    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
+        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
+        artifactoryPluginConvention.contextUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
+        artifactoryPluginConvention.publish {
+            repository {
+                repoKey = artifactoryRepo
+                username = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
+                password = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
+            }
+        }
 
-		project.tasks.getByName('artifactoryPublish').dependsOn {
-			println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
-		}
-	}
+        project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
+    }
 }
