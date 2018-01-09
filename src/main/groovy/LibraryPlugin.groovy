@@ -46,9 +46,9 @@ class LibraryPlugin extends Common {
             dependsOn 'artifactoryPublish'
             dependsOn 'uploadArchives'
             dependsOn 'closeAndReleaseRepository'
-            tasks.findByName('artifactoryPublish').mustRunAfter 'build'
-            tasks.findByName('uploadArchives').mustRunAfter 'build'
-            tasks.findByName('closeAndReleaseRepository').mustRunAfter 'uploadArchives'
+            project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
+            project.tasks.findByName('uploadArchives').mustRunAfter 'build'
+            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'uploadArchives'
         })
 
         configureForArtifactoryUpload(project)

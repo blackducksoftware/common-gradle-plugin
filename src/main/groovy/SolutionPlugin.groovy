@@ -35,7 +35,7 @@ class SolutionPlugin extends Common {
 
         project.tasks.create('deploySolution', {
             dependsOn 'artifactoryPublish'
-            tasks.findByName('artifactoryPublish').mustRunAfter 'build'
+            project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
         })
 
         configureForArtifactoryUpload(project)
