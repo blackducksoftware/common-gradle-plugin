@@ -34,10 +34,7 @@ class SolutionPlugin extends Common {
         super.apply(project)
 
         project.tasks.create('deploySolution', {
-            dependsOn 'clean'
-            dependsOn 'build'
             dependsOn 'artifactoryPublish'
-            tasks.findByName('build').mustRunAfter 'clean'
             tasks.findByName('artifactoryPublish').mustRunAfter 'build'
         })
 
