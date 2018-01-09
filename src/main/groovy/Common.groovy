@@ -120,7 +120,7 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.tasks.getByName('jacocoTestReport').reports {
-            // coveralls plugin depends on xml format report
+            // coveralls plugin demands xml format
             xml.enabled = true
             html.enabled = true
         }
@@ -136,6 +136,7 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
         licenseExtension.ext.projectName = project.name
         licenseExtension.ignoreFailures = true
+        licenseExtension.strictCheck = true
         licenseExtension.includes (['**/*.groovy', '**/*.java'])
         licenseExtension.excludes ([
             '/src/test/*.groovy',
