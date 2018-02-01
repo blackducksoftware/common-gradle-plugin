@@ -49,6 +49,8 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
+    public static final ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME = 'ARTIFACTORY_DEPLOYER_USER'
+    public static final ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD = 'ARTIFACTORY_DEPLOYER_PASSWORD'
     public static final PROPERTY_SONATYPE_USERNAME = 'sonatypeUsername'
     public static final PROPERTY_SONATYPE_PASSWORD = 'sonatypePassword'
 
@@ -58,6 +60,14 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
+        project.ext.artifactoryUsername = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
+        project.ext.artifactoryPassword = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
+        if (!project.ext.artifactoryUsername) {
+            project.ext.artifactoryUsername = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
+        }
+        if (!project.ext.artifactoryPassword) {
+            project.ext.artifactoryPassword = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
+        }
 
         project.repositories {
             jcenter()
@@ -156,11 +166,9 @@ abstract class Common implements Plugin<Project> {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
         artifactoryPluginConvention.contextUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
         artifactoryPluginConvention.publish {
-            repository {
-                repoKey = artifactoryRepo
-                username = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
-                password = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
-            }
+            repository { repoKey = artifactoryRepo }
+            username = project.ext.artifactoryUsername
+            password = project.ext.artifactoryPassword
         }
 
         if (defaultsClosure != null) {
