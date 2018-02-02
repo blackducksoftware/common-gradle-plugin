@@ -53,6 +53,8 @@ abstract class Common implements Plugin<Project> {
     public static final ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD = 'ARTIFACTORY_DEPLOYER_PASSWORD'
     public static final PROPERTY_SONATYPE_USERNAME = 'sonatypeUsername'
     public static final PROPERTY_SONATYPE_PASSWORD = 'sonatypePassword'
+    public static final ENVIRONMENT_VARIABLE_SONATYPE_USERNAME = 'SONATYPE_USERNAME'
+    public static final ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD = 'SONATYPE_PASSWORD'
 
     void apply(Project project) {
         if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
@@ -60,13 +62,41 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
+
+        //assume some reasonable defaults if the environment doesn't provide specific values
+        project.ext.artifactoryUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
+        if (!project.ext.artifactoryUrl) {
+            project.ext.artifactoryUrl = 'https://prd-eng-repo02.dc2.lan/artifactory'
+        }
+        project.ext.artifactoryRepo = project.findProperty(PROPERTY_ARTIFACTORY_REPO)
+        if (!project.ext.artifactoryRepo) {
+            project.ext.artifactoryRepo = 'bds-integrations-snapshot'
+        }
+        project.ext.artifactorySnapshotRepo = project.findProperty(PROPERTY_ARTIFACTORY_SNAPSHOT_REPO)
+        if (!project.ext.artifactorySnapshotRepo) {
+            project.ext.artifactorySnapshotRepo = 'bds-integrations-snapshot'
+        }
+        project.ext.artifactoryReleaseRepo = project.findProperty(PROPERTY_ARTIFACTORY_RELEASE_REPO)
+        if (!project.ext.artifactoryReleaseRepo) {
+            project.ext.artifactoryReleaseRepo = 'bds-integrations-release'
+        }
+
+        //but passwords have no reasonable defaults
         project.ext.artifactoryDeployerUsername = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
-        project.ext.artifactoryDeployerPassword = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
         if (!project.ext.artifactoryDeployerUsername) {
             project.ext.artifactoryDeployerUsername = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
         }
+        project.ext.artifactoryDeployerPassword = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
         if (!project.ext.artifactoryDeployerPassword) {
             project.ext.artifactoryDeployerPassword = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
+        }
+        project.ext.sonatypeUsername = project.findProperty(PROPERTY_SONATYPE_USERNAME)
+        if (!project.ext.sonatypeUsername) {
+            project.ext.sonatypeUsername = System.getenv(ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
+        }
+        project.ext.sonatypePassword = project.findProperty(PROPERTY_SONATYPE_PASSWORD)
+        if (!project.ext.sonatypePassword) {
+            project.ext.sonatypePassword = System.getenv(ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
         }
 
         project.repositories {
@@ -163,9 +193,8 @@ abstract class Common implements Plugin<Project> {
     }
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
-        project.ext.artifactoryRepo = artifactoryRepo
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-        artifactoryPluginConvention.contextUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
+        artifactoryPluginConvention.contextUrl = project.ext.artifactoryUrl
         artifactoryPluginConvention.publish {
             repository { repoKey = artifactoryRepo }
             username = project.ext.artifactoryDeployerUsername

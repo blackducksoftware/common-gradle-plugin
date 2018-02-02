@@ -57,9 +57,9 @@ class LibraryPlugin extends Common {
     }
 
     private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.findProperty(Common.PROPERTY_ARTIFACTORY_SNAPSHOT_REPO)
+        String artifactoryRepo = project.ext.artifactorySnapshotRepo
         if (!project.isSnapshot) {
-            artifactoryRepo = project.findProperty(Common.PROPERTY_ARTIFACTORY_RELEASE_REPO)
+            artifactoryRepo = project.ext.artifactoryReleaseRepo
         }
 
         configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs ('archives') })
@@ -76,8 +76,8 @@ class LibraryPlugin extends Common {
         }
         signingExtension.sign(archivesConfiguration)
 
-        String sonatypeUsername = project.findProperty(Common.PROPERTY_SONATYPE_USERNAME)
-        String sonatypePassword = project.findProperty(Common.PROPERTY_SONATYPE_PASSWORD)
+        String sonatypeUsername = project.ext.sonatypeUsername
+        String sonatypePassword = project.ext.sonatypePassword
         String rootProjectName = project.getRootProject().getName()
         project.uploadArchives {
             repositories {
