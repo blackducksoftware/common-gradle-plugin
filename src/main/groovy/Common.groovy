@@ -60,13 +60,13 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
-        project.ext.artifactoryUsername = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
-        project.ext.artifactoryPassword = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
-        if (!project.ext.artifactoryUsername) {
-            project.ext.artifactoryUsername = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
+        project.ext.artifactoryDeployerUsername = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
+        project.ext.artifactoryDeployerPassword = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
+        if (!project.ext.artifactoryDeployerUsername) {
+            project.ext.artifactoryDeployerUsername = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
         }
-        if (!project.ext.artifactoryPassword) {
-            project.ext.artifactoryPassword = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
+        if (!project.ext.artifactoryDeployerPassword) {
+            project.ext.artifactoryDeployerPassword = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
         }
 
         project.repositories {
@@ -168,8 +168,8 @@ abstract class Common implements Plugin<Project> {
         artifactoryPluginConvention.contextUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
         artifactoryPluginConvention.publish {
             repository { repoKey = artifactoryRepo }
-            username = project.ext.artifactoryUsername
-            password = project.ext.artifactoryPassword
+            username = project.ext.artifactoryDeployerUsername
+            password = project.ext.artifactoryDeployerPassword
         }
 
         if (defaultsClosure != null) {
