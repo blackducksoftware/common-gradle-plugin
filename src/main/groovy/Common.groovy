@@ -163,6 +163,7 @@ abstract class Common implements Plugin<Project> {
     }
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
+        project.ext.artifactoryRepo = artifactoryRepo
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
         artifactoryPluginConvention.contextUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
         artifactoryPluginConvention.publish {
