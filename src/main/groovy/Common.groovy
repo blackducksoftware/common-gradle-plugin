@@ -37,6 +37,8 @@ import org.gradle.api.tasks.javadoc.Javadoc
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.kt3k.gradle.plugin.CoverallsPlugin
+import org.sonarqube.gradle.SonarQubeExtension
+import org.sonarqube.gradle.SonarQubePlugin
 
 import com.hierynomus.gradle.license.LicenseBasePlugin
 
@@ -47,14 +49,19 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
     public static final PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactorySnapshotRepo'
     public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
+
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
     public static final ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME = 'ARTIFACTORY_DEPLOYER_USER'
     public static final ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD = 'ARTIFACTORY_DEPLOYER_PASSWORD'
+
     public static final PROPERTY_SONATYPE_USERNAME = 'sonatypeUsername'
     public static final PROPERTY_SONATYPE_PASSWORD = 'sonatypePassword'
     public static final ENVIRONMENT_VARIABLE_SONATYPE_USERNAME = 'SONATYPE_USERNAME'
     public static final ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD = 'SONATYPE_PASSWORD'
+
+    public static final PROPERTY_SONAR_QUBE_LOGIN = 'sonarQubeLogin'
+    public static final ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN = 'SONAR_QUBE_LOGIN'
 
     void apply(Project project) {
         if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
@@ -98,6 +105,10 @@ abstract class Common implements Plugin<Project> {
         if (!project.ext.sonatypePassword) {
             project.ext.sonatypePassword = System.getenv(ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
         }
+        project.ext.sonarQubeLogin = project.findProperty(PROPERTY_SONAR_QUBE_LOGIN)
+        if (!project.ext.sonarQubeLogin) {
+            project.ext.sonarQubeLogin = System.getenv(ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN)
+        }
 
         project.repositories {
             jcenter()
@@ -112,6 +123,7 @@ abstract class Common implements Plugin<Project> {
         project.plugins.apply(LicenseBasePlugin.class)
         project.plugins.apply(CoverallsPlugin.class)
         project.plugins.apply(ArtifactoryPlugin.class)
+        project.plugins.apply(SonarQubePlugin.class)
 
         project.tasks.withType(JavaCompile) {
             options.encoding = 'UTF-8'
@@ -131,6 +143,7 @@ abstract class Common implements Plugin<Project> {
 
         configureForJava(project)
         configureForLicense(project)
+        configureForSonarQube(project)
     }
 
     public void configureForJava(Project project) {
@@ -186,6 +199,15 @@ abstract class Common implements Plugin<Project> {
         //task to apply the header to all included files
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
+    }
+
+    public void configureForSonarQube(Project project) {
+        SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube')
+        sonarQubeExtension.properties {
+            property 'sonar.host.url', 'https://sonarcloud.io'
+            property 'sonar.organization', 'black-duck-software'
+            property 'sonar.login', project.ext.sonarQubeLogin
+        }
     }
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {

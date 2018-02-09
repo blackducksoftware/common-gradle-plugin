@@ -18,7 +18,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.29-SNAPSHOT'
+version = '0.0.29'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -44,6 +44,9 @@ dependencies {
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
+
+    //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
+    compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1'
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }
