@@ -42,6 +42,7 @@ import org.kt3k.gradle.plugin.CoverallsPlugin
 
 import com.hierynomus.gradle.license.LicenseBasePlugin
 
+import groovy.json.JsonSlurper
 import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
@@ -136,19 +137,8 @@ abstract class Common implements Plugin<Project> {
         configureForTesting(project)
     }
 
-    // TODO Currently the extension provides the data to late in the life cycle to actually create new tasks
     public void configureForTesting(Project project) {
-        TestExtension testExtension = project.extensions.create('alternativeTests', TestExtension)
-        testExtension.with {
-            defaultTasksAndPackages = [
-                'testIntegration' : 'com.blackducksoftware.integration.test.annotation.IntegrationTest',
-                'testDatabaseConnection' : 'com.blackducksoftware.integration.test.annotation.DatabaseConnectionTest',
-                'testExternalConnection' : 'com.blackducksoftware.integration.test.annotation.ExternalConnectionTest',
-                'testHubConnection' : 'com.blackducksoftware.integration.test.annotation.HubConnectionTest',
-                'testPerformance' : 'com.blackducksoftware.integration.test.annotation.PerformanceTest'
-            ]
-        }
-        def testTasksAndPackages = getTestTasksAndPackages(testExtension)
+        def testTasksAndPackages = getTestTasksAndPackages(project)
 
         Test testTask = project.tasks.findByName('test')
         testTask.useJUnit {
@@ -160,12 +150,19 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    public Map getTestTasksAndPackages(TestExtension testExtension) {
-        Map tasksAndPackages = testExtension.defaultTasksAndPackages
-        Map customTasksAndPackages = testExtension.customTasksAndPackages
-
+    public Map getTestTasksAndPackages(Project project) {
+        Map tasksAndPackages = [
+            'testIntegration' : 'com.blackducksoftware.integration.test.annotation.IntegrationTest',
+            'testDatabaseConnection' : 'com.blackducksoftware.integration.test.annotation.DatabaseConnectionTest',
+            'testExternalConnection' : 'com.blackducksoftware.integration.test.annotation.ExternalConnectionTest',
+            'testHubConnection' : 'com.blackducksoftware.integration.test.annotation.HubConnectionTest',
+            'testPerformance' : 'com.blackducksoftware.integration.test.annotation.PerformanceTest'
+        ]
+        String customTasksAndPackages = project.ext.customTasksAndPackages
         if (customTasksAndPackages) {
-            tasksAndPackages.putAll(customTasksAndPackages as Map)
+            def jsonSlurper = new JsonSlurper()
+            Map customTasksAndPackagesAsMap = jsonSlurper.parseText(customTasksAndPackages) as Map
+            tasksAndPackages.putAll(customTasksAndPackagesAsMap)
         }
 
         tasksAndPackages
@@ -246,9 +243,4 @@ abstract class Common implements Plugin<Project> {
         project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
     }
 
-}
-
-class TestExtension {
-    Map defaultTasksAndPackages
-    Map customTasksAndPackages
 }
