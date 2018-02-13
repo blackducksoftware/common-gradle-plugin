@@ -10,6 +10,8 @@ plugins {
     id 'eclipse'
     id 'com.jfrog.artifactory' version '4.6.0'
     id 'com.github.hierynomus.license' version '0.14.0'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
 }
 
 apply plugin: 'io.codearte.nexus-staging'
@@ -44,6 +46,8 @@ dependencies {
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
+    
+    testCompile 'com.blackducksoftware.integration:integration-test-common:1.0.0'
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }

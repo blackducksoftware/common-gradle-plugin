@@ -1,3 +1,4 @@
+
 /*
  * common-gradle-plugin
  *
@@ -34,6 +35,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.api.tasks.testing.Test
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.kt3k.gradle.plugin.CoverallsPlugin
@@ -131,6 +133,42 @@ abstract class Common implements Plugin<Project> {
 
         configureForJava(project)
         configureForLicense(project)
+        configureForTesting(project)
+    }
+
+    // TODO Currently the extension provides the data to late in the life cycle to actually create new tasks
+    public void configureForTesting(Project project) {
+        TestExtension testExtension = project.extensions.create('alternativeTests', TestExtension)
+        testExtension.with {
+            defaultTasksAndPackages = [
+                'testIntegration' : 'com.blackducksoftware.integration.test.annotation.IntegrationTest',
+                'testDatabaseConnection' : 'com.blackducksoftware.integration.test.annotation.DatabaseConnectionTest',
+                'testExternalConnection' : 'com.blackducksoftware.integration.test.annotation.ExternalConnectionTest',
+                'testHubConnection' : 'com.blackducksoftware.integration.test.annotation.HubConnectionTest',
+                'testPerformance' : 'com.blackducksoftware.integration.test.annotation.PerformanceTest'
+            ]
+        }
+        def testTasksAndPackages = getTestTasksAndPackages(testExtension)
+
+        Test testTask = project.tasks.findByName('test')
+        testTask.useJUnit {
+            excludeCategories = testTasksAndPackages.values()
+        }
+
+        testTasksAndPackages.each { tasks, packages ->
+            project.tasks.create("$tasks", Test) { useJUnit { includeCategories packages } }
+        }
+    }
+
+    public Map getTestTasksAndPackages(TestExtension testExtension) {
+        Map tasksAndPackages = testExtension.defaultTasksAndPackages
+        Map customTasksAndPackages = testExtension.customTasksAndPackages
+
+        if (customTasksAndPackages) {
+            tasksAndPackages.putAll(customTasksAndPackages as Map)
+        }
+
+        tasksAndPackages
     }
 
     public void configureForJava(Project project) {
@@ -207,4 +245,10 @@ abstract class Common implements Plugin<Project> {
 
         project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
     }
+
+}
+
+class TestExtension {
+    Map defaultTasksAndPackages
+    Map customTasksAndPackages
 }
