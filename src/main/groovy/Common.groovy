@@ -1,4 +1,3 @@
-
 /*
  * common-gradle-plugin
  *
@@ -40,6 +39,7 @@ import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.kt3k.gradle.plugin.CoverallsPlugin
 
+import com.blackducksoftware.integration.test.annotation.TestCategories
 import com.hierynomus.gradle.license.LicenseBasePlugin
 
 import groovy.json.JsonSlurper
@@ -130,7 +130,10 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.group = 'com.blackducksoftware.integration'
-        project.dependencies { testCompile 'junit:junit:4.12' }
+        project.dependencies {
+            testCompile 'junit:junit:4.12'
+            testCompile 'com.blackducksoftware.integration:integration-test-common:2.0.0'
+        }
 
         configureForJava(project)
         configureForLicense(project)
@@ -146,18 +149,17 @@ abstract class Common implements Plugin<Project> {
         }
 
         testTasksAndPackages.each { tasks, packages ->
-            project.tasks.create("$tasks", Test) { useJUnit { includeCategories packages } }
+            project.tasks.create("$tasks", Test) {
+                useJUnit { includeCategories packages }
+                group = 'Verification'
+                description = 'Runs the specific category test'
+            }
         }
     }
 
     public Map getTestTasksAndPackages(Project project) {
-        Map tasksAndPackages = [
-            'testIntegration' : 'com.blackducksoftware.integration.test.annotation.IntegrationTest',
-            'testDatabaseConnection' : 'com.blackducksoftware.integration.test.annotation.DatabaseConnectionTest',
-            'testExternalConnection' : 'com.blackducksoftware.integration.test.annotation.ExternalConnectionTest',
-            'testHubConnection' : 'com.blackducksoftware.integration.test.annotation.HubConnectionTest',
-            'testPerformance' : 'com.blackducksoftware.integration.test.annotation.PerformanceTest'
-        ]
+        TestCategories testCategories = new TestCategories()
+        Map tasksAndPackages = testCategories.getTestTasksAndPackages()
         String customTasksAndPackages = project.ext.customTasksAndPackages
         if (customTasksAndPackages) {
             def jsonSlurper = new JsonSlurper()

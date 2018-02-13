@@ -1,4 +1,3 @@
-
 /*
  * common-gradle-plugin
  *
