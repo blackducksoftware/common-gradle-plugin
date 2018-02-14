@@ -48,7 +48,7 @@ dependencies {
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1'
 
-    compile 'com.blackducksoftware.integration:integration-test-common:2.0.0'
+    compile "com.blackducksoftware.integration:integration-test-common:+"
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }
