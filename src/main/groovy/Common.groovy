@@ -162,7 +162,7 @@ abstract class Common implements Plugin<Project> {
         }
 
         testTasksAndPackages.each { tasks, packages ->
-            project.tasks.create("$tasks", Test) {
+            project.tasks.create(tasks, Test) {
                 useJUnit { includeCategories packages }
                 group = 'Verification'
                 description = 'Runs the specific category test'
@@ -173,7 +173,7 @@ abstract class Common implements Plugin<Project> {
     public Map getTestTasksAndPackages(Project project) {
         TestCategories testCategories = new TestCategories()
         Map tasksAndPackages = testCategories.getTestTasksAndPackages()
-        String customTasksAndPackages = project.ext.customTasksAndPackages
+        String customTasksAndPackages = project.findProperty("customTasksAndPackages")
         if (customTasksAndPackages) {
             def jsonSlurper = new JsonSlurper()
             Map customTasksAndPackagesAsMap = jsonSlurper.parseText(customTasksAndPackages) as Map
