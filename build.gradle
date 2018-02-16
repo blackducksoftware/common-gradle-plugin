@@ -1,5 +1,5 @@
 buildscript {
-    repositories { mavenCentral() }
+    repositories { jcenter() }
     dependencies { classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0' }
 }
 
@@ -25,7 +25,6 @@ targetCompatibility = 1.8
 
 repositories {
     jcenter()
-    mavenCentral()
     maven { url 'https://plugins.gradle.org/m2/' }
 }
 
@@ -104,14 +103,19 @@ if (!project.version.endsWith('-SNAPSHOT')) {
 }
 
 artifactory {
+    contextUrl = artifactoryUrl
     publish {
-        contextUrl = artifactoryUrl
         repository {
             repoKey = artifactoryRepo
             username = artifactoryDeployerUsername
             password = artifactoryDeployerPassword
         }
         defaults { publishConfigs ('archives') }
+    }
+    resolve {
+        repository {
+            repoKey = artifactoryReleaseRepo
+        }
     }
 }
 

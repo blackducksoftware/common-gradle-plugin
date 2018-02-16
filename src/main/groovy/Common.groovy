@@ -115,7 +115,6 @@ abstract class Common implements Plugin<Project> {
 
         project.repositories {
             jcenter()
-            mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
@@ -151,6 +150,19 @@ abstract class Common implements Plugin<Project> {
         configureForLicense(project)
         configureForSonarQube(project)
         configureForTesting(project)
+        configureForArtifactoryRepository(project)
+    }
+
+    public void configureForArtifactoryRepository(Project project) {
+        //        ArtifactoryPlugin artifactoryConfig = project.plugins.getPlugin('com.jfrog.artifactory')
+        //        ArtifactoryPluginConvention artifactoryConvention = artifactoryConfig.getArtifactoryPluginConvention(project)
+        ArtifactoryPluginConvention artifactoryConvention = project.convention.plugins.artifactory
+        artifactoryConvention.setContextUrl(project.ext.artifactoryUrl)
+        artifactoryConvention.resolve {
+            repository {
+                repoKey = project.ext.artifactoryReleaseRepo
+            }
+        }
     }
 
     public void configureForTesting(Project project) {
