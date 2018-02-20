@@ -34,14 +34,17 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.api.tasks.testing.Test
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.kt3k.gradle.plugin.CoverallsPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
+import com.blackducksoftware.integration.test.annotation.TestCategories
 import com.hierynomus.gradle.license.LicenseBasePlugin
 
+import groovy.json.JsonSlurper
 import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
@@ -112,7 +115,6 @@ abstract class Common implements Plugin<Project> {
 
         project.repositories {
             jcenter()
-            mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
@@ -139,11 +141,58 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.group = 'com.blackducksoftware.integration'
-        project.dependencies { testCompile 'junit:junit:4.12' }
+        project.dependencies {
+            testCompile 'junit:junit:4.12'
+            testCompile 'com.blackducksoftware.integration:integration-test-common:+'
+        }
 
         configureForJava(project)
         configureForLicense(project)
         configureForSonarQube(project)
+        configureForTesting(project)
+        configureForArtifactoryRepository(project)
+    }
+
+    public void configureForArtifactoryRepository(Project project) {
+        //        ArtifactoryPlugin artifactoryConfig = project.plugins.getPlugin('com.jfrog.artifactory')
+        //        ArtifactoryPluginConvention artifactoryConvention = artifactoryConfig.getArtifactoryPluginConvention(project)
+        ArtifactoryPluginConvention artifactoryConvention = project.convention.plugins.artifactory
+        artifactoryConvention.setContextUrl(project.ext.artifactoryUrl)
+        artifactoryConvention.resolve {
+            repository {
+                repoKey = project.ext.artifactoryReleaseRepo
+            }
+        }
+    }
+
+    public void configureForTesting(Project project) {
+        def testTasksAndPackages = getTestTasksAndPackages(project)
+
+        Test testTask = project.tasks.findByName('test')
+        testTask.useJUnit {
+            excludeCategories = testTasksAndPackages.values()
+        }
+
+        testTasksAndPackages.each { tasks, packages ->
+            project.tasks.create(tasks, Test) {
+                useJUnit { includeCategories packages }
+                group = 'Verification'
+                description = 'Runs the specific category test'
+            }
+        }
+    }
+
+    public Map getTestTasksAndPackages(Project project) {
+        TestCategories testCategories = new TestCategories()
+        Map tasksAndPackages = testCategories.getTestTasksAndPackages()
+        String customTasksAndPackages = project.findProperty("customTasksAndPackages")
+        if (customTasksAndPackages) {
+            def jsonSlurper = new JsonSlurper()
+            Map customTasksAndPackagesAsMap = jsonSlurper.parseText(customTasksAndPackages) as Map
+            tasksAndPackages.putAll(customTasksAndPackagesAsMap)
+        }
+
+        tasksAndPackages
     }
 
     public void configureForJava(Project project) {
@@ -229,4 +278,5 @@ abstract class Common implements Plugin<Project> {
 
         project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
     }
+
 }
