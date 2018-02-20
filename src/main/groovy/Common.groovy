@@ -73,7 +73,8 @@ abstract class Common implements Plugin<Project> {
 
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
 
-        //assume some reasonable defaults if the environment doesn't provide specific values
+        // assume some reasonable defaults if the environment doesn't provide
+        // specific values
         project.ext.artifactoryUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
         if (!project.ext.artifactoryUrl) {
             project.ext.artifactoryUrl = 'https://prd-eng-repo02.dc2.lan/artifactory'
@@ -91,7 +92,8 @@ abstract class Common implements Plugin<Project> {
             project.ext.artifactoryReleaseRepo = 'bds-integrations-release'
         }
 
-        //but passwords have no reasonable defaults
+        // can't assume anything here because passwords have no reasonable
+        // defaults
         project.ext.artifactoryDeployerUsername = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
         if (!project.ext.artifactoryDeployerUsername) {
             project.ext.artifactoryDeployerUsername = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
@@ -150,19 +152,6 @@ abstract class Common implements Plugin<Project> {
         configureForLicense(project)
         configureForSonarQube(project)
         configureForTesting(project)
-        configureForArtifactoryRepository(project)
-    }
-
-    public void configureForArtifactoryRepository(Project project) {
-        //        ArtifactoryPlugin artifactoryConfig = project.plugins.getPlugin('com.jfrog.artifactory')
-        //        ArtifactoryPluginConvention artifactoryConvention = artifactoryConfig.getArtifactoryPluginConvention(project)
-        ArtifactoryPluginConvention artifactoryConvention = project.convention.plugins.artifactory
-        artifactoryConvention.setContextUrl(project.ext.artifactoryUrl)
-        artifactoryConvention.resolve {
-            repository {
-                repoKey = project.ext.artifactoryReleaseRepo
-            }
-        }
     }
 
     public void configureForTesting(Project project) {
@@ -177,7 +166,7 @@ abstract class Common implements Plugin<Project> {
             project.tasks.create(tasks, Test) {
                 useJUnit { includeCategories packages }
                 group = 'Verification'
-                description = 'Runs the specific category test'
+                description = 'Runs all the tests with the specific category.'
             }
         }
     }
@@ -270,6 +259,15 @@ abstract class Common implements Plugin<Project> {
             repository { repoKey = artifactoryRepo }
             username = project.ext.artifactoryDeployerUsername
             password = project.ext.artifactoryDeployerPassword
+        }
+        // for resolving artifacts, we want the default to always be the release
+        // repository - if the project requires resolving from the snapshot
+        // repository, that will need to be configured in that project's
+        // build.gradle
+        artifactoryPluginConvention.resolve {
+            repository {
+                repoKey = project.ext.artifactoryReleaseRepo
+            }
         }
 
         if (defaultsClosure != null) {
