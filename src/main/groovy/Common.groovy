@@ -145,7 +145,7 @@ abstract class Common implements Plugin<Project> {
         project.group = 'com.blackducksoftware.integration'
         project.dependencies {
             testCompile 'junit:junit:4.12'
-            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.0, 100.100.100)'
+            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.0,)'
         }
 
         configureForJava(project)
