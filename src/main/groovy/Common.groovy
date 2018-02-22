@@ -22,6 +22,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -152,6 +153,32 @@ abstract class Common implements Plugin<Project> {
         configureForLicense(project)
         configureForSonarQube(project)
         configureForTesting(project)
+        configureForGithub(project)
+    }
+
+    public void configureForGithub(Project project) {
+        def githubFilenames = [
+            'CODE_OF_CONDUCT',
+            'CONTRIBUTING',
+            'ISSUE_TEMPLATE',
+            'PULL_REQUEST_TEMPLATE',
+            'README'
+        ]
+
+        project.tasks.create('githubFiles') {
+            doLast {
+                File projectGithubDir = new File('.github')
+                projectGithubDir.mkdir()
+                githubFilenames.each { createFile(it, projectGithubDir) }
+            }
+        }
+    }
+
+    public void createFile(String fileName, File parentFile) {
+        def githubFile = new File(fileName, parentFile)
+        def githubUrl = new URL("https://blackducksoftware.github.io/common-gradle-plugin/community/${filename}")
+        URLConnection urlConnection = githubUrl.openConnection()
+        FileUtils.copyInputStreamToFile(urlConnection.getInputStream(), githubFile)
     }
 
     public void configureForTesting(Project project) {
