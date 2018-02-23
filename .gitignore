@@ -1,0 +1,14 @@
+
+# operating system
+.DS_Store
+
+# ide
+.settings/
+.classpath
+.project
+bin/
+.idea
+
+# build tool
+.gradle/
+build/
