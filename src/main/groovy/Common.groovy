@@ -158,11 +158,11 @@ abstract class Common implements Plugin<Project> {
 
     public void configureForGithub(Project project) {
         def githubFilenames = [
-            'CODE_OF_CONDUCT',
-            'CONTRIBUTING',
-            'ISSUE_TEMPLATE',
-            'PULL_REQUEST_TEMPLATE',
-            'README'
+            'CODE_OF_CONDUCT.md',
+            'CONTRIBUTING.md',
+            'ISSUE_TEMPLATE.md',
+            'PULL_REQUEST_TEMPLATE.md',
+            'README.md'
         ]
 
         project.tasks.create('githubFiles') {
@@ -172,10 +172,13 @@ abstract class Common implements Plugin<Project> {
                 githubFilenames.each { createFile(it, projectGithubDir) }
             }
         }
+
+        Task githubFilesTask = project.tasks.getByName('githubFiles')
+        project.tasks.getByName('build').dependsOn(githubFilesTask)
     }
 
-    public void createFile(String fileName, File parentFile) {
-        def githubFile = new File(fileName, parentFile)
+    public void createFile(String filename, File parentFile) {
+        def githubFile = new File(filename, parentFile)
         def githubUrl = new URL("https://blackducksoftware.github.io/common-gradle-plugin/community/${filename}")
         URLConnection urlConnection = githubUrl.openConnection()
         FileUtils.copyInputStreamToFile(urlConnection.getInputStream(), githubFile)
