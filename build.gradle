@@ -18,7 +18,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.32-SNAPSHOT'
+version = '0.0.32'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -67,11 +67,9 @@ license {
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     ext.projectName = project.name
     ignoreFailures = true
-    includes (['**/*.groovy', '**/*.java'])
-    excludes ([
-        '/src/test/*.groovy',
-        'src/test/*.java'
-    ])
+    includes(['**/*.groovy', '**/*.java'])
+    excludes(['/src/test/*.groovy',
+              'src/test/*.java'])
 }
 
 tasks.getByName('build').dependsOn(licenseFormatMain)
@@ -110,7 +108,7 @@ artifactory {
             username = artifactoryDeployerUsername
             password = artifactoryDeployerPassword
         }
-        defaults { publishConfigs ('archives') }
+        defaults { publishConfigs('archives') }
     }
     resolve {
         repository {
@@ -126,8 +124,7 @@ uploadArchives.dependsOn { println "uploadArchives will attempt uploading ${proj
 uploadArchives {
     repositories {
         mavenDeployer {
-            beforeDeployment { MavenDeployment deployment ->
-                signing.signPom(deployment)
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment)
             }
             repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
                 authentication(userName: sonatypeUsername, password: sonatypePassword)
