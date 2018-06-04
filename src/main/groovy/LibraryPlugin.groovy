@@ -22,19 +22,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import io.codearte.gradle.nexus.NexusStagingExtension
+import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.maven.MavenDeployment
 import org.gradle.plugins.signing.SigningExtension
 
-import io.codearte.gradle.nexus.NexusStagingExtension
-import io.codearte.gradle.nexus.NexusStagingPlugin
-
 /**
  * This plugin is intended for common libraries. They will be published to
  * maven central and artifactory, using the version (SNAPSHOT or release) to
- * determine the appropriate destination for each.
- */
+ * determine the appropriate destination for each.*/
 class LibraryPlugin extends Common {
     void apply(Project project) {
         super.apply(project)
@@ -62,12 +61,23 @@ class LibraryPlugin extends Common {
             artifactoryRepo = project.ext.artifactoryReleaseRepo
         }
 
-        configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs ('archives') })
+        configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs('archives') })
     }
 
     private void configureForMavenCentralUpload(Project project) {
         NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
-        nexusStagingExtension.packageGroup = 'com.blackducksoftware'
+
+        String group = project.group
+        String packageGroup = 'com.blackducksoftware'
+        try {
+            // Not all of our projects are com.blackducksoftware anymore so we parse the packageGroup from the project.group
+            List<String> groupParts = group.tokenize('.')
+            packageGroup = groupParts.get(0) + '.' + groupParts.get(1)
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+
+        nexusStagingExtension.packageGroup = packageGroup
 
         Configuration archivesConfiguration = project.configurations.getByName('archives')
         SigningExtension signingExtension = project.extensions.getByName('signing')
@@ -82,8 +92,7 @@ class LibraryPlugin extends Common {
         project.uploadArchives {
             repositories {
                 mavenDeployer {
-                    beforeDeployment { MavenDeployment deployment ->
-                        signingExtension.signPom(deployment)
+                    beforeDeployment { MavenDeployment deployment -> signingExtension.signPom(deployment)
                     }
                     repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
                         authentication(userName: sonatypeUsername, password: sonatypePassword)
