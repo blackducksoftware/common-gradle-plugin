@@ -67,17 +67,9 @@ class LibraryPlugin extends Common {
     private void configureForMavenCentralUpload(Project project) {
         NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
 
-        String group = project.group
-        String packageGroup = 'com.blackducksoftware'
-        try {
-            // Not all of our projects are com.blackducksoftware anymore so we parse the packageGroup from the project.group
-            List<String> groupParts = group.tokenize('.')
-            packageGroup = groupParts.get(0) + '.' + groupParts.get(1)
-        } catch (Exception e) {
-            e.printStackTrace()
+        if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
+            nexusStagingExtension.packageGroup = 'com.blackducksoftware'
         }
-
-        nexusStagingExtension.packageGroup = packageGroup
 
         Configuration archivesConfiguration = project.configurations.getByName('archives')
         SigningExtension signingExtension = project.extensions.getByName('signing')
