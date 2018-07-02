@@ -23,6 +23,10 @@
  * under the License.
  */
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> branch 'master' of https://github.com/blackducksoftware/common-gradle-plugin.git
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -117,7 +121,9 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.repositories {
+            mavenLocal()
             jcenter()
+            mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
@@ -147,7 +153,7 @@ abstract class Common implements Plugin<Project> {
         }
         project.dependencies {
             testCompile 'junit:junit:4.12'
-            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.0,)'
+            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.1,)'
         }
 
         configureForJava(project)
