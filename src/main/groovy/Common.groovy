@@ -23,10 +23,6 @@
  * under the License.
  */
 
-<<<<<<< HEAD
-=======
-
->>>>>>> branch 'master' of https://github.com/blackducksoftware/common-gradle-plugin.git
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
