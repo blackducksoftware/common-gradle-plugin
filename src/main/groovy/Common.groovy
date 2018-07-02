@@ -23,11 +23,6 @@
  * under the License.
  */
 
-
-import com.blackducksoftware.integration.test.annotation.TestCategories
-import com.hierynomus.gradle.license.LicenseBasePlugin
-import groovy.json.JsonSlurper
-import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -46,6 +41,12 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.kt3k.gradle.plugin.CoverallsPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
+
+import com.blackducksoftware.integration.test.annotation.TestCategories
+import com.hierynomus.gradle.license.LicenseBasePlugin
+
+import groovy.json.JsonSlurper
+import nl.javadude.gradle.plugins.license.LicenseExtension
 
 abstract class Common implements Plugin<Project> {
     public static final PROPERTY_ARTIFACTORY_URL = 'artifactoryUrl'
@@ -163,6 +164,8 @@ abstract class Common implements Plugin<Project> {
             excludeCategories = testTasksAndPackages.values()
         }
 
+        testTask.testLogging { exceptionFormat = 'full' }
+
         testTasksAndPackages.each { tasks, packages ->
             project.tasks.create(tasks, Test) {
                 useJUnit { includeCategories packages }
@@ -236,8 +239,10 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.ignoreFailures = true
         licenseExtension.strictCheck = true
         licenseExtension.includes(['**/*.groovy', '**/*.java'])
-        licenseExtension.excludes(['/src/test/*.groovy',
-                                   'src/test/*.java'])
+        licenseExtension.excludes([
+            '/src/test/*.groovy',
+            'src/test/*.java'
+        ])
 
         //task to apply the header to all included files
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
