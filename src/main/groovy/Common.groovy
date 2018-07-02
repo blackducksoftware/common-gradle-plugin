@@ -117,6 +117,8 @@ abstract class Common implements Plugin<Project> {
 
         project.repositories {
             jcenter()
+            mavenCentral()
+            mavenLocal()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
@@ -145,7 +147,7 @@ abstract class Common implements Plugin<Project> {
         project.group = 'com.blackducksoftware.integration'
         project.dependencies {
             testCompile 'junit:junit:4.12'
-            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.0,)'
+            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.1,)'
         }
 
         configureForJava(project)

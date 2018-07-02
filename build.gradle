@@ -18,7 +18,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.32-SNAPSHOT'
+version = '0.0.32'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -47,10 +47,10 @@ dependencies {
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1'
 
-    compile 'com.blackducksoftware.integration:integration-test-common:[3.1.0,)'
+    compile 'com.blackducksoftware.integration:integration-test-common:[3.1.1,)'
 }
 
-configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }
+configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.5.0' } }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
