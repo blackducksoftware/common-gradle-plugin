@@ -22,6 +22,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -116,9 +118,9 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.repositories {
+            mavenLocal()
             jcenter()
             mavenCentral()
-            mavenLocal()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
@@ -143,8 +145,9 @@ abstract class Common implements Plugin<Project> {
                 options.compilerArgs.addAll(project.jvmArgs.split(','))
             }
         }
-
-        project.group = 'com.blackducksoftware.integration'
+        if (!project.group) {
+            project.group = 'com.blackducksoftware.integration'
+        }
         project.dependencies {
             testCompile 'junit:junit:4.12'
             testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.1,)'
@@ -236,8 +239,8 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.ext.projectName = project.name
         licenseExtension.ignoreFailures = true
         licenseExtension.strictCheck = true
-        licenseExtension.includes (['**/*.groovy', '**/*.java'])
-        licenseExtension.excludes ([
+        licenseExtension.includes(['**/*.groovy', '**/*.java'])
+        licenseExtension.excludes([
             '/src/test/*.groovy',
             'src/test/*.java'
         ])
