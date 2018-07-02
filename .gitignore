@@ -12,3 +12,4 @@ out/
 # build tool
 .gradle/
 build/
+/common-gradle-plugin.iml
