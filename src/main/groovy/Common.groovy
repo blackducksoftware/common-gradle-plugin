@@ -24,8 +24,8 @@
  */
 
 
-import com.blackducksoftware.integration.test.annotation.TestCategories
 import com.hierynomus.gradle.license.LicenseBasePlugin
+import com.synopsys.integration.test.annotation.TestCategories
 import groovy.json.JsonSlurper
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
@@ -148,7 +148,7 @@ abstract class Common implements Plugin<Project> {
         }
         project.dependencies {
             testCompile 'junit:junit:4.12'
-            testCompile 'com.blackducksoftware.integration:integration-test-common:[3.1.4,)'
+            testCompile 'com.blackducksoftware.integration:integration-test-common:[4.0.0,)'
         }
 
         configureForJava(project)
