@@ -133,4 +133,5 @@ class LibraryPlugin extends Common {
         project.tasks.getByName('releaseRepository').onlyIf { !project.isSnapshot }
         project.tasks.getByName('releaseRepository').dependsOn 'uploadArchives'
     }
+
 }

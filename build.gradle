@@ -29,25 +29,23 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
+    implementation gradleApi()
 
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
-    compile 'org.jfrog.buildinfo:build-info-extractor-gradle:4.6.0'
+    implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.6.0'
 
     //https://github.com/hierynomus/license-gradle-plugin
-    compile 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
+    implementation 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
 
     //https://github.com/kt3k/coveralls-gradle-plugin
-    compile 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+    implementation 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
-    compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
+    implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
 
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
-    compile 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1'
-
-    compile 'com.blackducksoftware.integration:integration-test-common:[4.0.0,)'
+    implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1'
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:2.4.12' } }

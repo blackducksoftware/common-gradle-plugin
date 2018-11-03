@@ -23,17 +23,10 @@
  * under the License.
  */
 
-
 import com.hierynomus.gradle.license.LicenseBasePlugin
-import com.synopsys.integration.test.annotation.TestCategories
-import groovy.json.JsonSlurper
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
-import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.api.Task
+import org.gradle.api.*
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.bundling.Jar
@@ -52,6 +45,8 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
     public static final PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactorySnapshotRepo'
     public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
+    public static final PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS = 'junitPlatformDefaultTestTags'
+    public static final PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS = 'junitPlatformCustomTestTags'
 
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -73,47 +68,20 @@ abstract class Common implements Plugin<Project> {
 
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
 
-        // assume some reasonable defaults if the environment doesn't provide
-        // specific values
-        project.ext.artifactoryUrl = project.findProperty(PROPERTY_ARTIFACTORY_URL)
-        if (!project.ext.artifactoryUrl) {
-            project.ext.artifactoryUrl = 'https://prd-eng-repo02.dc2.lan/artifactory'
-        }
-        project.ext.artifactoryRepo = project.findProperty(PROPERTY_ARTIFACTORY_REPO)
-        if (!project.ext.artifactoryRepo) {
-            project.ext.artifactoryRepo = 'bds-integrations-snapshot'
-        }
-        project.ext.artifactorySnapshotRepo = project.findProperty(PROPERTY_ARTIFACTORY_SNAPSHOT_REPO)
-        if (!project.ext.artifactorySnapshotRepo) {
-            project.ext.artifactorySnapshotRepo = 'bds-integrations-snapshot'
-        }
-        project.ext.artifactoryReleaseRepo = project.findProperty(PROPERTY_ARTIFACTORY_RELEASE_REPO)
-        if (!project.ext.artifactoryReleaseRepo) {
-            project.ext.artifactoryReleaseRepo = 'bds-integrations-release'
-        }
+        // assume some reasonable defaults if the environment doesn't provide specific values
+        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_URL, 'https://prd-eng-repo02.dc2.lan/artifactory')
+        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_REPO, 'bds-integrations-snapshot')
+        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
+        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
+        setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
+        setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
 
-        // can't assume anything here because passwords have no reasonable
-        // defaults
-        project.ext.artifactoryDeployerUsername = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME)
-        if (!project.ext.artifactoryDeployerUsername) {
-            project.ext.artifactoryDeployerUsername = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
-        }
-        project.ext.artifactoryDeployerPassword = project.findProperty(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD)
-        if (!project.ext.artifactoryDeployerPassword) {
-            project.ext.artifactoryDeployerPassword = System.getenv(ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
-        }
-        project.ext.sonatypeUsername = project.findProperty(PROPERTY_SONATYPE_USERNAME)
-        if (!project.ext.sonatypeUsername) {
-            project.ext.sonatypeUsername = System.getenv(ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
-        }
-        project.ext.sonatypePassword = project.findProperty(PROPERTY_SONATYPE_PASSWORD)
-        if (!project.ext.sonatypePassword) {
-            project.ext.sonatypePassword = System.getenv(ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
-        }
-        project.ext.sonarQubeLogin = project.findProperty(PROPERTY_SONAR_QUBE_LOGIN)
-        if (!project.ext.sonarQubeLogin) {
-            project.ext.sonarQubeLogin = System.getenv(ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN)
-        }
+        // can't assume anything here because passwords have no reasonable defaults
+        setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
+        setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
+        setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_USERNAME, ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
+        setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_PASSWORD, ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
+        setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONAR_QUBE_LOGIN, ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN)
 
         project.repositories {
             mavenLocal()
@@ -146,47 +114,11 @@ abstract class Common implements Plugin<Project> {
         if (!project.group) {
             project.group = 'com.blackducksoftware.integration'
         }
-        project.dependencies {
-            testCompile 'junit:junit:4.12'
-            testCompile 'com.blackducksoftware.integration:integration-test-common:[4.0.0,)'
-        }
 
         configureForJava(project)
         configureForLicense(project)
         configureForSonarQube(project)
         configureForTesting(project)
-    }
-
-    public void configureForTesting(Project project) {
-        def testTasksAndPackages = getTestTasksAndPackages(project)
-
-        Test testTask = project.tasks.findByName('test')
-        testTask.useJUnit {
-            excludeCategories = testTasksAndPackages.values()
-        }
-
-        testTask.testLogging { exceptionFormat = 'full' }
-
-        testTasksAndPackages.each { tasks, packages ->
-            project.tasks.create(tasks, Test) {
-                useJUnit { includeCategories packages }
-                group = 'Verification'
-                description = 'Runs all the tests with the specific category.'
-            }
-        }
-    }
-
-    public Map getTestTasksAndPackages(Project project) {
-        TestCategories testCategories = new TestCategories()
-        Map tasksAndPackages = testCategories.getTestTasksAndPackages()
-        String customTasksAndPackages = project.findProperty("customTasksAndPackages")
-        if (customTasksAndPackages) {
-            def jsonSlurper = new JsonSlurper()
-            Map customTasksAndPackagesAsMap = jsonSlurper.parseText(customTasksAndPackages) as Map
-            tasksAndPackages.putAll(customTasksAndPackagesAsMap)
-        }
-
-        tasksAndPackages
     }
 
     public void configureForJava(Project project) {
@@ -257,6 +189,46 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
+    public void configureForTesting(Project project) {
+        project.dependencies {
+            testCompileOnly 'junit:junit:4.12'
+            testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+            testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+            testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.3.1'
+        }
+
+        def allTestTags = ''
+        if (project.ext.junitPlatformDefaultTestTags) {
+            allTestTags += project.ext.junitPlatformDefaultTestTags
+        }
+        if (project.ext.junitPlatformCustomTestTags) {
+            allTestTags += ',' + project.ext.junitPlatformCustomTestTags
+        }
+        def testTags = allTestTags.split("\\s*,\\s*")
+
+        def descriptionSuffix = testTags.collect { "@Tag(\"${it}\")" }.join(" or ")
+        project.test {
+            useJUnitPlatform {
+                excludeTags testTags
+            }
+            description += " NOTE: This excludes those tests with ${descriptionSuffix})."
+        }
+
+        testTags.each { testTag ->
+            project.tasks.create('test' + testTag.capitalize(), Test) {
+                useJUnitPlatform { includeTags testTag }
+                group = 'verification'
+                description = "Runs all the tests with @Tag(\"${testTag}\")."
+            }
+        }
+
+        project.tasks.create('testAll', Test) {
+            useJUnitPlatform()
+            group = 'verification'
+            description = "Runs all the tests (ignores tags)."
+        }
+    }
+
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
         configureDefaultsForArtifactory(project, artifactoryRepo, null)
     }
@@ -284,6 +256,20 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
+    }
+
+    private void setExtPropertyOnProject(Project project, String propertyName, String propertyDefaults) {
+        project.ext[propertyName] = project.findProperty(propertyName)
+        if (!project.ext[propertyName]) {
+            project.ext[propertyName] = propertyDefaults
+        }
+    }
+
+    private void setExtPropertyOnProjectNoDefaults(Project project, String propertyName, String envVarName) {
+        project.ext[propertyName] = project.findProperty(propertyName)
+        if (!project.ext[propertyName]) {
+            project.ext[propertyName] = System.getenv(envVarName)
+        }
     }
 
 }
