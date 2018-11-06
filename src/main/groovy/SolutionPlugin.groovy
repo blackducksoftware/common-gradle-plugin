@@ -27,8 +27,7 @@ import org.gradle.api.Project
 /**
  * This plugin is meant for final integration solutions. They can create the
  * 'mavenJava' publication for uploading to artifactory, overloading the
- * 'artifactoryRepo' property to affect the destination repository.
- */
+ * 'artifactoryRepo' property to affect the destination repository.*/
 class SolutionPlugin extends Common {
     void apply(Project project) {
         super.apply(project)
@@ -45,4 +44,5 @@ class SolutionPlugin extends Common {
         String artifactoryRepo = project.ext.artifactoryRepo
         configureDefaultsForArtifactory(project, artifactoryRepo)
     }
+
 }
