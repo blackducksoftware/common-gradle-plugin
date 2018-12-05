@@ -47,6 +47,8 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
     public static final PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS = 'junitPlatformDefaultTestTags'
     public static final PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS = 'junitPlatformCustomTestTags'
+    public static final PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
+    public static final PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
 
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -75,6 +77,8 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
         setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
         setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
+        setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
+        setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
 
         // can't assume anything here because passwords have no reasonable defaults
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
@@ -128,8 +132,8 @@ abstract class Common implements Plugin<Project> {
         Configuration archivesConfiguration = project.configurations.getByName('archives')
         JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
-        javaPluginConvention.sourceCompatibility = 1.8
-        javaPluginConvention.targetCompatibility = 1.8
+        javaPluginConvention.sourceCompatibility = project.ext.javaSourceCompatibility
+        javaPluginConvention.targetCompatibility = project.ext.javaTargetCompatibility
 
         Task sourcesJarTask = project.tasks.findByName('sourcesJar')
         if (sourcesJarTask == null) {
@@ -171,7 +175,7 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.ext.projectName = project.name
         licenseExtension.ignoreFailures = true
         licenseExtension.strictCheck = true
-        licenseExtension.includes(['**/*.groovy', '**/*.java'])
+        licenseExtension.includes(['**/*.groovy', '**/*.java', '**/*.js'])
         licenseExtension.excludes(['/src/test/*.groovy',
                                    'src/test/*.java'])
 
