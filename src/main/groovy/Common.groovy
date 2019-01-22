@@ -94,7 +94,6 @@ abstract class Common implements Plugin<Project> {
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
-        project.plugins.apply('java')
         project.plugins.apply('eclipse')
         project.plugins.apply('maven')
         project.plugins.apply('jacoco')
