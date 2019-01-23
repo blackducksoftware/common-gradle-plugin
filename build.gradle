@@ -45,7 +45,7 @@ dependencies {
     implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.20.0'
 
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
-    implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0+'
+    implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:+' } }
