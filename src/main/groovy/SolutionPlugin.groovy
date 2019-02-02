@@ -29,6 +29,8 @@ import org.gradle.api.Project
  * 'artifactoryRepo' property to affect the destination repository.*/
 class SolutionPlugin extends Common {
     void apply(Project project) {
+        project.plugins.apply('java')
+
         super.apply(project)
 
         project.tasks.create('deploySolution', {

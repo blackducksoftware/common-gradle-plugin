@@ -34,6 +34,8 @@ import org.gradle.plugins.signing.SigningExtension
  * determine the appropriate destination for each.*/
 class LibraryPlugin extends Common {
     void apply(Project project) {
+        project.plugins.apply("java-library")
+        
         super.apply(project)
 
         project.plugins.apply('signing')
