@@ -18,10 +18,10 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.48-SNAPSHOT'
+version = '0.0.47-SNAPSHOT'
 
-project.ext.javaSourceCompatibility = 1.8
-project.ext.javaTargetCompatibility = 1.8
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     jcenter()
