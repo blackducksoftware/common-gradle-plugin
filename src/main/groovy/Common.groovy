@@ -216,9 +216,7 @@ abstract class Common implements Plugin<Project> {
                 excludeTags testTags
             }
             description += " NOTE: This excludes those tests with ${descriptionSuffix})."
-            testLogging {
-                showStandardStreams = true
-            }
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
         }
 
         testTags.each { testTag ->
@@ -226,9 +224,7 @@ abstract class Common implements Plugin<Project> {
                 useJUnitPlatform { includeTags testTag }
                 group = 'verification'
                 description = "Runs all the tests with @Tag(\"${testTag}\")."
-                testLogging {
-                    showStandardStreams = true
-                }
+                testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
             }
         }
 
@@ -236,9 +232,7 @@ abstract class Common implements Plugin<Project> {
             useJUnitPlatform()
             group = 'verification'
             description = "Runs all the tests (ignores tags)."
-            testLogging {
-                showStandardStreams = true
-            }
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
         }
     }
 
