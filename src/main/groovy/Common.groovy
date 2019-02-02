@@ -1,9 +1,8 @@
 /*
  * common-gradle-plugin
  *
- * Copyright (C) 2018 Black Duck Software, Inc.
+ * Copyright (C) 2019 Black Duck Software, Inc.
  * http://www.blackducksoftware.com/
- *
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
@@ -22,7 +21,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import com.hierynomus.gradle.license.LicenseBasePlugin
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
@@ -47,6 +45,7 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
     public static final PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS = 'junitPlatformDefaultTestTags'
     public static final PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS = 'junitPlatformCustomTestTags'
+    public static final PROPERTY_JUNIT_SHOW_STANDARD_STREAMS = 'junitShowStandardStreams'
     public static final PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
 
@@ -77,6 +76,7 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
         setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
         setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
+        setExtPropertyOnProject(project, PROPERTY_JUNIT_SHOW_STANDARD_STREAMS, 'false')
         setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
 
@@ -216,6 +216,7 @@ abstract class Common implements Plugin<Project> {
                 excludeTags testTags
             }
             description += " NOTE: This excludes those tests with ${descriptionSuffix})."
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
         }
 
         testTags.each { testTag ->
@@ -223,6 +224,7 @@ abstract class Common implements Plugin<Project> {
                 useJUnitPlatform { includeTags testTag }
                 group = 'verification'
                 description = "Runs all the tests with @Tag(\"${testTag}\")."
+                testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
             }
         }
 
@@ -230,6 +232,7 @@ abstract class Common implements Plugin<Project> {
             useJUnitPlatform()
             group = 'verification'
             description = "Runs all the tests (ignores tags)."
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
         }
     }
 
