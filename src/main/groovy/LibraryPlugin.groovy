@@ -32,10 +32,8 @@ import org.gradle.plugins.signing.SigningExtension
  * This plugin is intended for common libraries. They will be published to
  * maven central and artifactory, using the version (SNAPSHOT or release) to
  * determine the appropriate destination for each.*/
-class LibraryPlugin extends Common {
+class LibraryPlugin extends SimplePlugin {
     void apply(Project project) {
-        project.plugins.apply("java-library")
-        
         super.apply(project)
 
         project.plugins.apply('signing')
