@@ -176,7 +176,8 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.strictCheck = true
         licenseExtension.includes(['**/*.groovy', '**/*.java', '**/*.js'])
         licenseExtension.excludes(['/src/test/*.groovy',
-                                   'src/test/*.java'])
+                                   'src/test/*.java',
+                                   '**/module-info.java'])
 
         //task to apply the header to all included files
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
