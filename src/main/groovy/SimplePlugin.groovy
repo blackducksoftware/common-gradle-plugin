@@ -31,6 +31,16 @@ class SimplePlugin extends Common {
         project.plugins.apply("java-library")
 
         super.apply(project)
+
+        if (Boolean.valueOf(project.ext[Common.PROPERTY_JAVA_USE_AUTO_MODULE_NAME]) && project.ext.moduleName) {
+            def moduleName = project.ext.moduleName
+            project.tasks.getByName('jar') {
+                inputs.property("moduleName", moduleName)
+                manifest {
+                    attributes('Automatic-Module-Name': moduleName)
+                }
+            }
+        }
     }
 
 }

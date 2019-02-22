@@ -48,6 +48,7 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_JUNIT_SHOW_STANDARD_STREAMS = 'junitShowStandardStreams'
     public static final PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
+    public static final PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
 
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -79,6 +80,7 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JUNIT_SHOW_STANDARD_STREAMS, 'false')
         setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
+        setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
 
         // can't assume anything here because passwords have no reasonable defaults
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
