@@ -8,6 +8,7 @@ buildscript {
 }
 
 plugins {
+    id 'java-library'
     id 'groovy'
     id 'maven-publish'
     id 'signing'
@@ -54,13 +55,13 @@ dependencies {
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:+' } }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
+task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
     archiveClassifier = 'sources'
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
+task javadocJar(type: Jar) {
+    from javadoc
     archiveClassifier = 'javadoc'
 }
 
@@ -76,17 +77,6 @@ license {
 
 tasks.getByName('build').dependsOn(licenseFormatMain)
 
-artifacts {
-    archives jar
-    archives sourcesJar
-    archives javadocJar
-}
-
-signing {
-    required { gradle.taskGraph.hasTask('publish') }
-    sign configurations.archives
-}
-
 nexusStaging { packageGroup = 'com.blackducksoftware' }
 
 closeRepository.onlyIf {
@@ -96,32 +86,6 @@ closeRepository.onlyIf {
 releaseRepository.onlyIf {
     !project.version.endsWith('-SNAPSHOT')
 }
-
-def artifactoryRepo = artifactorySnapshotRepo
-if (!project.version.endsWith('-SNAPSHOT')) {
-    artifactoryRepo = artifactoryReleaseRepo
-}
-
-artifactory {
-    contextUrl = artifactoryUrl
-    publish {
-        repository {
-            repoKey = artifactoryRepo
-            username = artifactoryDeployerUsername
-            password = artifactoryDeployerPassword
-        }
-        defaults { publishConfigs('archives') }
-    }
-    resolve {
-        repository {
-            repoKey = artifactoryReleaseRepo
-        }
-    }
-}
-
-artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
-
-publish.dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
 
 publishing {
     publications {
@@ -179,3 +143,34 @@ publishing {
         }
     }
 }
+
+publish.dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
+
+signing {
+    required { gradle.taskGraph.hasTask('publish') }
+    sign publishing.publications.mavenJava
+}
+
+def artifactoryRepo = artifactorySnapshotRepo
+if (!project.version.endsWith('-SNAPSHOT')) {
+    artifactoryRepo = artifactoryReleaseRepo
+}
+
+artifactory {
+    contextUrl = artifactoryUrl
+    publish {
+        repository {
+            repoKey = artifactoryRepo
+            username = artifactoryDeployerUsername
+            password = artifactoryDeployerPassword
+        }
+        defaults { publications ('mavenJava') }
+    }
+    resolve {
+        repository {
+            repoKey = artifactoryReleaseRepo
+        }
+    }
+}
+
+artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
