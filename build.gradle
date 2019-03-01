@@ -21,7 +21,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackducksoftware.integration'
-version = '0.0.52-SNAPSHOT'
+version = '0.0.53'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -166,9 +166,9 @@ publishing {
             }
         }
     }
+
     repositories {
         maven {
-            // change URLs to point to your repos, e.g. http://my.org/repo
             def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
             def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
