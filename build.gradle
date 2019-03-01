@@ -78,7 +78,11 @@ license {
 
 tasks.getByName('build').dependsOn(licenseFormatMain)
 
-nexusStaging { packageGroup = 'com.blackducksoftware' }
+nexusStaging {
+    packageGroup = 'com.blackducksoftware'
+    username = sonatypeUsername
+    password = sonatypePassword
+}
 
 closeRepository.onlyIf {
     !project.version.endsWith('-SNAPSHOT')
