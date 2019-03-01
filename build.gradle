@@ -1,18 +1,21 @@
 buildscript {
-    repositories { jcenter() }
-    dependencies { classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0' }
+    repositories {
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
 }
 
 plugins {
     id 'groovy'
-    id 'maven'
+    id 'maven-publish'
     id 'signing'
     id 'eclipse'
-    id 'com.jfrog.artifactory' version '4.8.1'
+    id 'com.jfrog.artifactory' version '4.9.3'
     id 'com.github.hierynomus.license' version '0.14.0'
+    id 'io.codearte.nexus-staging' version '0.20.0'
 }
-
-apply plugin: 'io.codearte.nexus-staging'
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
@@ -33,7 +36,7 @@ dependencies {
 
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
-    implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.9.0'
+    implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.9.3'
 
     //https://github.com/hierynomus/license-gradle-plugin
     implementation 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
@@ -45,19 +48,20 @@ dependencies {
     implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.20.0'
 
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
+    //https://plugins.gradle.org/plugin/org.sonarqube
     implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:+' } }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
     from sourceSets.main.allSource
+    archiveClassifier = 'sources'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
     from javadoc.destinationDir
+    archiveClassifier = 'javadoc'
 }
 
 license {
@@ -79,7 +83,7 @@ artifacts {
 }
 
 signing {
-    required { gradle.taskGraph.hasTask("uploadArchives") }
+    required { gradle.taskGraph.hasTask('publishing') }
     sign configurations.archives
 }
 
@@ -117,46 +121,60 @@ artifactory {
 
 artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
 
-uploadArchives.dependsOn { println "uploadArchives will attempt uploading ${project.name}:${project.version} to maven central" }
+publish.dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment)
-            }
-            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-            pom.project {
-                name rootProject.name
-                description rootProject.description
-                url "https://www.github.com/blackducksoftware/${rootProject.name}"
-                packaging 'jar'
-                scm {
-                    connection "scm:git:git://github.com/blackducksoftware/${rootProject.name}.git"
-                    developerConnection "scm:git:git@github.com:blackducksoftware/${rootProject.name}.git"
-                    url "https://www.github.com/blackducksoftware/${rootProject.name}"
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = rootProject.name
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
                 }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = rootProject.name
+                description = rootProject.description
+                url = "https://www.github.com/blackducksoftware/${rootProject.name}"
                 licenses {
                     license {
-                        name 'Apache License 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0'
+                        name = 'Apache License 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0'
                     }
                 }
                 developers {
                     developer {
-                        id 'blackduckoss'
-                        name 'Black Duck OSS'
-                        email 'bdsoss@blackducksoftware.com'
-                        organization 'Black Duck Software, Inc.'
-                        organizationUrl 'http://www.blackducksoftware.com'
-                        roles { role 'developer' }
-                        timezone 'America/New_York'
+                        id = 'blackduckoss'
+                        name = 'Black Duck OSS'
+                        email = 'bdsoss@blackducksoftware.com'
+                        organization = 'Black Duck Software, Inc.'
+                        organizationUrl = 'http://www.blackducksoftware.com'
+                        timezone = 'America/New_York'
                     }
                 }
+                scm {
+                    connection = "scm:git:git://github.com/blackducksoftware/${rootProject.name}.git"
+                    developerConnection = "scm:git:git@github.com:blackducksoftware/${rootProject.name}.git"
+                    url = "https://www.github.com/blackducksoftware/${rootProject.name}"
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            // change URLs to point to your repos, e.g. http://my.org/repo
+            def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
             }
         }
     }
