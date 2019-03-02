@@ -26,6 +26,7 @@ import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.maven.MavenDeployment
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugins.signing.SigningExtension
 
 /**
@@ -41,11 +42,11 @@ class LibraryPlugin extends SimplePlugin {
 
         project.tasks.create('deployLibrary', {
             dependsOn 'artifactoryPublish'
-            dependsOn 'uploadArchives'
+            dependsOn 'publish'
             dependsOn 'closeAndReleaseRepository'
             project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
-            project.tasks.findByName('uploadArchives').mustRunAfter 'build'
-            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'uploadArchives'
+            project.tasks.findByName('publish').mustRunAfter 'build'
+            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publish'
         })
 
         configureForArtifactoryUpload(project)
@@ -59,7 +60,7 @@ class LibraryPlugin extends SimplePlugin {
             artifactoryRepo = project.ext.artifactoryReleaseRepo
         }
 
-        configureDefaultsForArtifactory(project, artifactoryRepo, { publishConfigs('archives') })
+        configureDefaultsForArtifactory(project, artifactoryRepo, { publications('archives') })
     }
 
     private void configureForMavenCentralUpload(Project project) {
@@ -67,69 +68,83 @@ class LibraryPlugin extends SimplePlugin {
 
         if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
             nexusStagingExtension.packageGroup = 'com.blackducksoftware'
+            nexusStagingExtension.username = project.ext.sonatypeUsername
+            nexusStagingExtension.password = project.ext.sonatypePassword
         }
 
-        Configuration archivesConfiguration = project.configurations.getByName('archives')
         SigningExtension signingExtension = project.extensions.getByName('signing')
         signingExtension.required {
-            project.gradle.taskGraph.hasTask('uploadArchives')
+            project.gradle.taskGraph.hasTask('publish')
         }
-        signingExtension.sign(archivesConfiguration)
+        signingExtension.sign(project.publishing.publications.mavenJava)
 
         String sonatypeUsername = project.ext.sonatypeUsername
         String sonatypePassword = project.ext.sonatypePassword
-        String rootProjectName = project.getRootProject().getName()
-        project.uploadArchives {
-            repositories {
-                mavenDeployer {
-                    beforeDeployment { MavenDeployment deployment -> signingExtension.signPom(deployment)
-                    }
-                    repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-                        authentication(userName: sonatypeUsername, password: sonatypePassword)
-                    }
-                    snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                        authentication(userName: sonatypeUsername, password: sonatypePassword)
-                    }
-                    pom.project {
-                        name project.rootProject.name
-                        description project.rootProject.description
-                        url "https://www.github.com/blackducksoftware/${rootProjectName}"
-                        packaging 'jar'
-                        scm {
-                            connection "scm:git:git://github.com/blackducksoftware/${rootProjectName}.git"
-                            developerConnection "scm:git:git@github.com:blackducksoftware/${rootProjectName}.git"
-                            url "https://www.github.com/blackducksoftware/${rootProjectName}"
+        project.publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    artifactId = rootProject.name
+                    from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
                         }
+                        usage('java-runtime') {
+                            fromResolutionResult()
+                        }
+                    }
+                    pom {
+                        name = rootProject.name
+                        description = rootProject.description
+                        url = "https://www.github.com/blackducksoftware/${rootProject.name}"
                         licenses {
                             license {
-                                name 'Apache License 2.0'
-                                url 'http://www.apache.org/licenses/LICENSE-2.0'
+                                name = 'Apache License 2.0'
+                                url = 'http://www.apache.org/licenses/LICENSE-2.0'
                             }
                         }
                         developers {
                             developer {
-                                id 'blackduckoss'
-                                name 'Black Duck OSS'
-                                email 'bdsoss@blackducksoftware.com'
-                                organization 'Black Duck Software, Inc.'
-                                organizationUrl 'http://www.blackducksoftware.com'
-                                roles { role 'developer' }
-                                timezone 'America/New_York'
+                                id = 'blackduckoss'
+                                name = 'Black Duck OSS'
+                                email = 'bdsoss@blackducksoftware.com'
+                                organization = 'Black Duck Software, Inc.'
+                                organizationUrl = 'http://www.blackducksoftware.com'
+                                timezone = 'America/New_York'
                             }
                         }
+                        scm {
+                            connection = "scm:git:git://github.com/blackducksoftware/${rootProject.name}.git"
+                            developerConnection = "scm:git:git@github.com:blackducksoftware/${rootProject.name}.git"
+                            url = "https://www.github.com/blackducksoftware/${rootProject.name}"
+                        }
+                    }
+                }
+            }
+
+            repositories {
+                maven {
+                    def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                    def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+                    url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                    credentials {
+                        username = sonatypeUsername
+                        password = sonatypePassword
                     }
                 }
             }
         }
 
-        project.tasks.getByName('uploadArchives').dependsOn { println "uploadArchives will attempt uploading ${project.name}:${project.version} to maven central" }
+        project.tasks.getByName('publish').dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
         project.tasks.getByName('closeRepository').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('closeRepository').dependsOn 'uploadArchives'
+        project.tasks.getByName('closeRepository').dependsOn 'publish'
         project.tasks.getByName('releaseRepository').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('releaseRepository').dependsOn 'uploadArchives'
+        project.tasks.getByName('releaseRepository').dependsOn 'publish'
     }
 
 }
