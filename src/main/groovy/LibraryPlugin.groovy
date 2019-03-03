@@ -138,8 +138,7 @@ class LibraryPlugin extends SimplePlugin {
             artifactoryRepo = project.ext.artifactoryReleaseRepo
         }
 
-        def mavenJavaPublication = project.publishing.publications.findByName('mavenJava')
-        configureDefaultsForArtifactory(project, artifactoryRepo, { mavenJavaPublication })
+        configureDefaultsForArtifactory(project, artifactoryRepo, { publications ('mavenJava') })
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
