@@ -97,7 +97,7 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.plugins.apply('eclipse')
-        project.plugins.apply('maven')
+        project.plugins.apply('maven-publish')
         project.plugins.apply('jacoco')
         project.plugins.apply(LicenseBasePlugin.class)
         project.plugins.apply(CoverallsPlugin.class)
@@ -130,7 +130,6 @@ abstract class Common implements Plugin<Project> {
         Task jarTask = project.tasks.getByName('jar')
         Task classesTask = project.tasks.getByName('classes')
         Task javadocTask = project.tasks.getByName('javadoc')
-        Configuration archivesConfiguration = project.configurations.getByName('archives')
         JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
         javaPluginConvention.sourceCompatibility = project.ext.javaSourceCompatibility

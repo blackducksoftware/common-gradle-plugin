@@ -49,18 +49,9 @@ class LibraryPlugin extends SimplePlugin {
             project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publish'
         })
 
-        configureForArtifactoryUpload(project)
         configureForMavenCentralUpload(project)
+        configureForArtifactoryUpload(project)
         configureForNexusStagingAutoRelease(project)
-    }
-
-    private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.ext.artifactorySnapshotRepo
-        if (!project.isSnapshot) {
-            artifactoryRepo = project.ext.artifactoryReleaseRepo
-        }
-
-        configureDefaultsForArtifactory(project, artifactoryRepo, { publications('archives') })
     }
 
     private void configureForMavenCentralUpload(Project project) {
@@ -72,21 +63,15 @@ class LibraryPlugin extends SimplePlugin {
             nexusStagingExtension.password = project.ext.sonatypePassword
         }
 
-        SigningExtension signingExtension = project.extensions.getByName('signing')
-        signingExtension.required {
-            project.gradle.taskGraph.hasTask('publish')
-        }
-        signingExtension.sign(project.publishing.publications.mavenJava)
-
         String sonatypeUsername = project.ext.sonatypeUsername
         String sonatypePassword = project.ext.sonatypePassword
         project.publishing {
             publications {
                 mavenJava(MavenPublication) {
-                    artifactId = rootProject.name
-                    from components.java
-                    artifact sourcesJar
-                    artifact javadocJar
+                    artifactId = project.rootProject.name
+                    from project.components.java
+                    artifact project.sourcesJar
+                    artifact project.javadocJar
                     versionMapping {
                         usage('java-api') {
                             fromResolutionOf('runtimeClasspath')
@@ -96,9 +81,9 @@ class LibraryPlugin extends SimplePlugin {
                         }
                     }
                     pom {
-                        name = rootProject.name
-                        description = rootProject.description
-                        url = "https://www.github.com/blackducksoftware/${rootProject.name}"
+                        name = project.rootProject.name
+                        description = project.rootProject.description
+                        url = "https://www.github.com/blackducksoftware/${project.rootProject.name}"
                         licenses {
                             license {
                                 name = 'Apache License 2.0'
@@ -116,9 +101,9 @@ class LibraryPlugin extends SimplePlugin {
                             }
                         }
                         scm {
-                            connection = "scm:git:git://github.com/blackducksoftware/${rootProject.name}.git"
-                            developerConnection = "scm:git:git@github.com:blackducksoftware/${rootProject.name}.git"
-                            url = "https://www.github.com/blackducksoftware/${rootProject.name}"
+                            connection = "scm:git:git://github.com/blackducksoftware/${project.rootProject.name}.git"
+                            developerConnection = "scm:git:git@github.com:blackducksoftware/${project.rootProject.name}.git"
+                            url = "https://www.github.com/blackducksoftware/${project.rootProject.name}"
                         }
                     }
                 }
@@ -128,7 +113,7 @@ class LibraryPlugin extends SimplePlugin {
                 maven {
                     def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
                     def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-                    url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                    url = project.rootProject.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                     credentials {
                         username = sonatypeUsername
                         password = sonatypePassword
@@ -138,6 +123,23 @@ class LibraryPlugin extends SimplePlugin {
         }
 
         project.tasks.getByName('publish').dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
+
+        SigningExtension signingExtension = project.extensions.getByName('signing')
+        signingExtension.required {
+            project.gradle.taskGraph.hasTask('publish')
+        }
+        def mavenJavaPublication = project.publishing.publications.findByName('mavenJava')
+        signingExtension.sign(mavenJavaPublication)
+    }
+
+    private void configureForArtifactoryUpload(Project project) {
+        String artifactoryRepo = project.ext.artifactorySnapshotRepo
+        if (!project.isSnapshot) {
+            artifactoryRepo = project.ext.artifactoryReleaseRepo
+        }
+
+        def mavenJavaPublication = project.publishing.publications.findByName('mavenJava')
+        configureDefaultsForArtifactory(project, artifactoryRepo, { mavenJavaPublication })
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
