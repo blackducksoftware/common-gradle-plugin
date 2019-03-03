@@ -146,7 +146,7 @@ abstract class Common implements Plugin<Project> {
         Task javadocJarTask = project.tasks.findByName('javadocJar')
         if (javadocJarTask == null) {
             javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar) {
-                from javadoc
+                from project.javadoc
                 archiveClassifier = 'javadoc'
             }
         }
