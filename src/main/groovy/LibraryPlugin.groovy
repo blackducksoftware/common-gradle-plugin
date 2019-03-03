@@ -55,16 +55,16 @@ class LibraryPlugin extends SimplePlugin {
     }
 
     private void configureForMavenCentralUpload(Project project) {
+        String sonatypeUsername = project.ext.sonatypeUsername
+        String sonatypePassword = project.ext.sonatypePassword
         NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
 
         if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
             nexusStagingExtension.packageGroup = 'com.blackducksoftware'
-            nexusStagingExtension.username = project.ext.sonatypeUsername
-            nexusStagingExtension.password = project.ext.sonatypePassword
+            nexusStagingExtension.username = sonatypeUsername
+            nexusStagingExtension.password = sonatypePassword
         }
 
-        String sonatypeUsername = project.ext.sonatypeUsername
-        String sonatypePassword = project.ext.sonatypePassword
         project.publishing {
             publications {
                 mavenJava(MavenPublication) {

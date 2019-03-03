@@ -137,17 +137,17 @@ abstract class Common implements Plugin<Project> {
 
         Task sourcesJarTask = project.tasks.findByName('sourcesJar')
         if (sourcesJarTask == null) {
-            sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar, dependsOn: classesTask) {
-                classifier = 'sources'
+            sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar) {
                 from javaPluginConvention.sourceSets.main.allSource
+                archiveClassifier = 'sources'
             }
         }
 
         Task javadocJarTask = project.tasks.findByName('javadocJar')
         if (javadocJarTask == null) {
-            javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar, dependsOn: javadocTask) {
-                classifier = 'javadoc'
-                from javadocTask.destinationDir
+            javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar) {
+                from javadoc
+                archiveClassifier = 'javadoc'
             }
         }
 
@@ -162,10 +162,6 @@ abstract class Common implements Plugin<Project> {
             xml.enabled = true
             html.enabled = true
         }
-
-        project.artifacts.add('archives', jarTask)
-        project.artifacts.add('archives', sourcesJarTask)
-        project.artifacts.add('archives', javadocJarTask)
     }
 
     public void configureForLicense(Project project) {
