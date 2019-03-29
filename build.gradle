@@ -67,7 +67,7 @@ task javadocJar(type: Jar) {
 }
 
 license {
-    headerURI = new URI('https://blackducksoftware.github.io/common-gradle-plugin/HEADER.txt')
+    headerURI = new URI('https://blackducksoftware.github.io/integration-resources/project/HEADER.txt')
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     ext.projectName = project.name
     ignoreFailures = true
