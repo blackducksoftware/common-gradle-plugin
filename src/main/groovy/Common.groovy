@@ -38,6 +38,8 @@ import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
 abstract class Common implements Plugin<Project> {
+    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project/EULA.txt'
+
     public static final PROPERTY_ARTIFACTORY_URL = 'artifactoryUrl'
     public static final PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
     public static final PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactorySnapshotRepo'
@@ -48,6 +50,7 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
     public static final PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
+    public static final PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA = 'synopsysOverrideIntegrationEula'
 
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -80,6 +83,7 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
+        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
 
         // can't assume anything here because passwords have no reasonable defaults
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
@@ -178,6 +182,23 @@ abstract class Common implements Plugin<Project> {
         //task to apply the header to all included files
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
+
+        Task createEulaTask = project.task('createEula') {
+            doLast {
+                def eulaFile = new File(project.projectDir, 'EULA.txt')
+                if (Boolean.valueOf(project.ext[Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA])) {
+                    println 'Your project is configured to NOT get the latest EULA - you should be providing your own up-to-date EULA.txt file. No file will be downloaded or updated automatically.'
+                } else {
+                    println "Your project is configured to get the latest EULA from ${EULA_LOCATION}. The EULA.txt file will be downloaded/updated automatically."
+                    def eulaUrl = new URL(EULA_LOCATION)
+
+                    eulaFile.withOutputStream { out ->
+                        eulaUrl.withInputStream { from -> out << from }
+                    }
+                }
+            }
+        }
+        project.tasks.getByName('build').dependsOn(createEulaTask)
     }
 
     public void configureForSonarQube(Project project) {
@@ -259,7 +280,9 @@ abstract class Common implements Plugin<Project> {
             artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
         }
 
-        project.tasks.getByName('artifactoryPublish').dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
+        project.tasks.getByName('artifactoryPublish').dependsOn {
+            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
+        }
     }
 
     private void setExtPropertyOnProject(Project project, String propertyName, String propertyDefaults) {
