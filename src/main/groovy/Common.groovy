@@ -185,15 +185,17 @@ abstract class Common implements Plugin<Project> {
 
         Task createEulaTask = project.task('createEula') {
             doLast {
-                def eulaFile = new File(project.projectDir, 'EULA.txt')
-                if (Boolean.valueOf(project.ext[Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA])) {
-                    println 'Your project is configured to NOT get the latest EULA - you should be providing your own up-to-date EULA.txt file. No file will be downloaded or updated automatically.'
-                } else {
-                    println "Your project is configured to get the latest EULA from ${EULA_LOCATION}. The EULA.txt file will be downloaded/updated automatically."
-                    def eulaUrl = new URL(EULA_LOCATION)
+                if (project.rootProject == project) {
+                    def eulaFile = new File(project.projectDir, 'EULA.txt')
+                    if (Boolean.valueOf(project.ext[Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA])) {
+                        println 'Your project is configured to NOT get the latest EULA - you should be providing your own up-to-date EULA.txt file. No file will be downloaded or updated automatically.'
+                    } else {
+                        println "Your project is configured to get the latest EULA from ${EULA_LOCATION}. The EULA.txt file will be downloaded/updated automatically."
+                        def eulaUrl = new URL(EULA_LOCATION)
 
-                    eulaFile.withOutputStream { out ->
-                        eulaUrl.withInputStream { from -> out << from }
+                        eulaFile.withOutputStream { out ->
+                            eulaUrl.withInputStream { from -> out << from }
+                        }
                     }
                 }
             }
