@@ -97,6 +97,7 @@ abstract class Common implements Plugin<Project> {
             jcenter()
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
+            maven { url "${project.ext.artifactoryUrl}/artifactory/${project.ext.artifactoryReleaseRepo}"}
         }
 
         project.plugins.apply('eclipse')
@@ -267,15 +268,6 @@ abstract class Common implements Plugin<Project> {
             repository { repoKey = artifactoryRepo }
             username = project.ext.artifactoryDeployerUsername
             password = project.ext.artifactoryDeployerPassword
-        }
-        // for resolving artifacts, we want the default to always be the release
-        // repository - if the project requires resolving from the snapshot
-        // repository, that will need to be configured in that project's
-        // build.gradle
-        artifactoryPluginConvention.resolve {
-            repository {
-                repoKey = project.ext.artifactoryReleaseRepo
-            }
         }
 
         if (defaultsClosure != null) {
