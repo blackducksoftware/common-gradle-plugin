@@ -94,10 +94,10 @@ abstract class Common implements Plugin<Project> {
 
         project.repositories {
             mavenLocal()
+            maven { url "${project.ext.artifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
             jcenter()
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
-            maven { url "${project.ext.artifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
         }
 
         project.plugins.apply('eclipse')
