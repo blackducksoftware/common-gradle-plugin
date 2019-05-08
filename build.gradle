@@ -178,4 +178,4 @@ artifactory {
     }
 }
 
-artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}" }
+artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryUrl}/${artifactoryRepo}" }

@@ -275,7 +275,7 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
-            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${artifactoryRepo}"
+            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext.artifactoryUrl}/${artifactoryRepo}"
         }
     }
 
