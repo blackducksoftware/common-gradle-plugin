@@ -73,7 +73,7 @@ abstract class Common implements Plugin<Project> {
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
 
         // assume some reasonable defaults if the environment doesn't provide specific values
-        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_URL, 'https://repo.blackducksoftware.com')
+        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_URL, 'https://repo.blackducksoftware.com/artifactory')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
@@ -97,7 +97,7 @@ abstract class Common implements Plugin<Project> {
             jcenter()
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
-            maven { url "${project.ext.artifactoryUrl}/artifactory/${project.ext.artifactoryReleaseRepo}"}
+            maven { url "${project.ext.artifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
         }
 
         project.plugins.apply('eclipse')
