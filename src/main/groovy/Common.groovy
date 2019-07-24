@@ -266,8 +266,8 @@ abstract class Common implements Plugin<Project> {
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
+        artifactoryPluginConvention.contextUrl = project.ext.deployArtifactoryUrl
         artifactoryPluginConvention.publish {
-            contextUrl = project.ext.deployArtifactoryUrl
             repository { repoKey = artifactoryRepo }
             username = project.ext.artifactoryDeployerUsername
             password = project.ext.artifactoryDeployerPassword
