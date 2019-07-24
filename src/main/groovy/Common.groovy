@@ -86,6 +86,9 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
 
+        // there is no default public artifactory for deploying
+        setExtPropertyOnProject(project, PROPERTY_DEPLOY_ARTIFACTORY_URL, '')
+
         // can't assume anything here because passwords have no reasonable defaults
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
