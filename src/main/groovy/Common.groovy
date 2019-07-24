@@ -40,7 +40,8 @@ import org.sonarqube.gradle.SonarQubePlugin
 abstract class Common implements Plugin<Project> {
     public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project/EULA.txt'
 
-    public static final PROPERTY_ARTIFACTORY_URL = 'artifactoryUrl'
+    public static final PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
+    public static final PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
     public static final PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
     public static final PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactorySnapshotRepo'
     public static final PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
@@ -73,7 +74,7 @@ abstract class Common implements Plugin<Project> {
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
 
         // assume some reasonable defaults if the environment doesn't provide specific values
-        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_URL, 'https://repo.blackducksoftware.com/artifactory')
+        setExtPropertyOnProject(project, PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
@@ -94,8 +95,7 @@ abstract class Common implements Plugin<Project> {
 
         project.repositories {
             mavenLocal()
-            maven { url "${project.ext.artifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
-            jcenter()
+            maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
@@ -263,8 +263,8 @@ abstract class Common implements Plugin<Project> {
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-        artifactoryPluginConvention.contextUrl = project.ext.artifactoryUrl
         artifactoryPluginConvention.publish {
+            contextUrl = project.ext.deployArtifactoryUrl
             repository { repoKey = artifactoryRepo }
             username = project.ext.artifactoryDeployerUsername
             password = project.ext.artifactoryDeployerPassword
@@ -275,7 +275,7 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
-            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext.artifactoryUrl}/${artifactoryRepo}"
+            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext.deployArtifactoryUrl}/${artifactoryRepo}"
         }
     }
 
