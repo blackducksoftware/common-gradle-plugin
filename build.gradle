@@ -163,7 +163,9 @@ if (!project.version.endsWith('-SNAPSHOT')) {
     artifactoryRepo = artifactoryReleaseRepo
 }
 
+println "outside:" + deployArtifactoryUrl
 artifactory {
+    println "inside:" + deployArtifactoryUrl
     contextUrl = deployArtifactoryUrl
     publish {
         repository {
