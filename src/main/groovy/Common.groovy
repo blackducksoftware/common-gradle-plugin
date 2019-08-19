@@ -178,7 +178,7 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.ext.projectName = project.name
         licenseExtension.ignoreFailures = true
         licenseExtension.strictCheck = true
-        licenseExtension.includes(['**/*.groovy', '**/*.java', '**/*.js'])
+        licenseExtension.includes(['**/*.groovy', '**/*.java', '**/*.js', '**/*.kt'])
         licenseExtension.excludes(['/src/test/*.groovy',
                                    'src/test/*.java',
                                    '**/module-info.java'])
