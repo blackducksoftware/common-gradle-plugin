@@ -24,7 +24,6 @@ import com.hierynomus.gradle.license.LicenseBasePlugin
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.*
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -38,7 +37,11 @@ import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
 abstract class Common implements Plugin<Project> {
-    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project/EULA.txt'
+    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
+    public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
+    public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
+    public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
+    public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
 
     public static final PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
@@ -52,6 +55,9 @@ abstract class Common implements Plugin<Project> {
     public static final PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
     public static final PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
     public static final PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA = 'synopsysOverrideIntegrationEula'
+    public static final PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
+    public static final PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
+    public static final PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
 
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -85,6 +91,9 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
+        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
+        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
+        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
 
         // there is no default public artifactory for deploying
         setExtPropertyOnProject(project, PROPERTY_DEPLOY_ARTIFACTORY_URL, '')
@@ -173,7 +182,7 @@ abstract class Common implements Plugin<Project> {
 
     public void configureForLicense(Project project) {
         LicenseExtension licenseExtension = project.extensions.getByName('license')
-        licenseExtension.headerURI = new URI('https://blackducksoftware.github.io/integration-resources/project/HEADER.txt')
+        licenseExtension.headerURI = new URI(HEADER_LOCATION)
         licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
         licenseExtension.ext.projectName = project.name
         licenseExtension.ignoreFailures = true
@@ -187,24 +196,10 @@ abstract class Common implements Plugin<Project> {
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
 
-        Task createEulaTask = project.task('createEula') {
-            doLast {
-                if (project.rootProject == project) {
-                    def eulaFile = new File(project.projectDir, 'EULA.txt')
-                    if (Boolean.valueOf(project.ext[Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA])) {
-                        println 'Your project is configured to NOT get the latest EULA - you should be providing your own up-to-date EULA.txt file. No file will be downloaded or updated automatically.'
-                    } else {
-                        println "Your project is configured to get the latest EULA from ${EULA_LOCATION}. The EULA.txt file will be downloaded/updated automatically."
-                        def eulaUrl = new URL(EULA_LOCATION)
-
-                        eulaFile.withOutputStream { out ->
-                            eulaUrl.withInputStream { from -> out << from }
-                        }
-                    }
-                }
-            }
-        }
-        project.tasks.getByName('build').dependsOn(createEulaTask)
+        registerFileInsertionTask(project, 'createEula', 'EULA.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
+        registerFileInsertionTask(project, 'createProjectLicense', 'LICENSE', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
+        registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
+        registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
     }
 
     public void configureForSonarQube(Project project) {
@@ -293,6 +288,38 @@ abstract class Common implements Plugin<Project> {
         project.ext[propertyName] = project.findProperty(propertyName)
         if (!project.ext[propertyName]) {
             project.ext[propertyName] = System.getenv(envVarName)
+        }
+    }
+
+    private void registerFileInsertionTask(Project project, String taskName, String fileName, String installFlag, String downloadUrl) {
+        Task createdTask = project.task(taskName) {
+            doLast {
+                if (project.rootProject == project) {
+                    def projectFile = new File(project.projectDir, fileName)
+                    if (Boolean.valueOf(project.ext[installFlag])) {
+                        if (!projectFile.exists()) {
+                            println("Your project did not contain the file ${fileName} but must contain one. The ${fileName} file will be downloaded automatically.")
+                            installFile(downloadUrl, projectFile)
+                        } else {
+                            println "Your project is configured to NOT get the latest ${fileName} - you should be providing your own up-to-date ${fileName} file. No file will be downloaded or updated automatically."
+                        }
+                    } else {
+                        println "Your project is configured to get the latest ${fileName} from ${downloadUrl}. The ${fileName} file will be downloaded/updated automatically."
+                        installFile(downloadUrl, projectFile)
+                    }
+                }
+            }
+        }
+        project.tasks.getByName('build').dependsOn(createdTask)
+    }
+
+    // This can't be private as there is a problem when calling private methods from within a closure.
+    // https://stackoverflow.com/questions/54636744/gradle-custom-task-implementation-could-not-find-method-for-arguments
+    void installFile(String downloadUrl, File projectFile) {
+        def downloadedFile = new URL(downloadUrl)
+
+        projectFile.withOutputStream { out ->
+            downloadedFile.withInputStream { from -> out << from }
         }
     }
 
