@@ -82,6 +82,7 @@ tasks.getByName('build').dependsOn(licenseFormatMain)
 
 nexusStaging {
     packageGroup = 'com.blackducksoftware'
+    stagingProfileId = '324d855ef1398'
     username = sonatypeUsername
     password = sonatypePassword
 }
