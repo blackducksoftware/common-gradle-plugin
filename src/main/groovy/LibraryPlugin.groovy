@@ -60,9 +60,10 @@ class LibraryPlugin extends SimplePlugin {
 
         if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
             nexusStagingExtension.packageGroup = 'com.blackducksoftware'
-            nexusStagingExtension.username = sonatypeUsername
-            nexusStagingExtension.password = sonatypePassword
+            nexusStagingExtension.stagingProfileId = '324d855ef1398'
         }
+        nexusStagingExtension.username = sonatypeUsername
+        nexusStagingExtension.password = sonatypePassword
 
         project.publishing {
             publications {
