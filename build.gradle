@@ -10,12 +10,12 @@ buildscript {
 plugins {
     id 'java-library'
     id 'groovy'
-    id 'maven-publish'
     id 'signing'
     id 'eclipse'
     id 'com.jfrog.artifactory' version '4.9.3'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'io.codearte.nexus-staging' version '0.21.1'
+    id 'de.marcphilipp.nexus-publish' version '0.3.1'
 }
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
