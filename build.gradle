@@ -15,7 +15,7 @@ plugins {
     id 'eclipse'
     id 'com.jfrog.artifactory' version '4.9.3'
     id 'com.github.hierynomus.license' version '0.14.0'
-    id 'io.codearte.nexus-staging' version '0.20.0'
+    id 'io.codearte.nexus-staging' version '0.21.1'
 }
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
@@ -49,7 +49,7 @@ dependencies {
     implementation 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
-    implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.20.0'
+    implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.1'
 
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     //https://plugins.gradle.org/plugin/org.sonarqube
