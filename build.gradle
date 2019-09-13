@@ -87,6 +87,15 @@ nexusStaging {
     password = sonatypePassword
 }
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = sonatypeUsername
+            password = sonatypePassword
+        }
+    }
+}
+
 closeRepository.onlyIf {
     !project.version.endsWith('-SNAPSHOT')
 }
