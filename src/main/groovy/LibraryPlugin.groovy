@@ -70,6 +70,8 @@ class LibraryPlugin extends SimplePlugin {
 
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
         nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
+        nexusPublishExtension.clientTimeout = 5
+        nexusPublishExtension.connectTimeout = 5
 
         project.publishing {
             publications {

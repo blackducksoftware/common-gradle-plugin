@@ -94,6 +94,8 @@ nexusStaging {
 nexusPublishing {
     repositories {
         sonatype()
+        connectTimeout = 5
+        clientTimeout = 5
     }
 }
 
