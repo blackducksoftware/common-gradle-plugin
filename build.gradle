@@ -1,3 +1,5 @@
+import java.time.Duration
+
 buildscript {
     repositories {
         mavenCentral()
@@ -94,8 +96,8 @@ nexusStaging {
 nexusPublishing {
     repositories {
         sonatype()
-        connectTimeout = 5
-        clientTimeout = 5
+        connectTimeout = Duration.ofMinutes(5)
+        clientTimeout = Duration.ofMinutes(5)
     }
 }
 
