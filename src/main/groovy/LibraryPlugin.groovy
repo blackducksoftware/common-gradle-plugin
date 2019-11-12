@@ -21,8 +21,6 @@
  * under the License.
  */
 
-import de.marcphilipp.gradle.nexus.NexusPublishExtension
-import de.marcphilipp.gradle.nexus.NexusRepositoryContainer
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
