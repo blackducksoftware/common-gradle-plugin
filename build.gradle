@@ -52,6 +52,9 @@ dependencies {
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.1'
 
+    //https://github.com/marcphilipp/nexus-publish-plugin
+    implementation 'de.marcphilipp.nexus-publish:de.marcphilipp.nexus-publish.gradle.plugin:0.4.0'
+
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     //https://plugins.gradle.org/plugin/org.sonarqube
     implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
@@ -70,7 +73,7 @@ task javadocJar(type: Jar) {
 }
 
 license {
-    headerURI = new URI('https://blackducksoftware.github.io/integration-resources/project/HEADER.txt')
+    headerURI = new java.net.URI('https://blackducksoftware.github.io/integration-resources/project/HEADER.txt')
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
     ext.projectName = project.name
     ignoreFailures = true
@@ -88,7 +91,13 @@ nexusStaging {
     password = sonatypePassword
 }
 
-publishToNexus.onlyIf {
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
+
+publishToSonatype.onlyIf {
     !project.version.endsWith('-SNAPSHOT')
 }
 

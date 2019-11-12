@@ -20,6 +20,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
+import de.marcphilipp.gradle.nexus.NexusRepositoryContainer
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
@@ -42,10 +45,10 @@ class LibraryPlugin extends SimplePlugin {
         project.tasks.create('deployLibrary', {
             dependsOn 'artifactoryPublish'
             dependsOn 'publish'
-            dependsOn 'publishToNexus'
+            dependsOn 'publishToSonatype'
             project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
             project.tasks.findByName('publish').mustRunAfter 'build'
-            project.tasks.findByName('publishToNexus').mustRunAfter 'publish'
+            project.tasks.findByName('publishToSonatype').mustRunAfter 'publish'
         })
 
         configureForMavenCentralUpload(project)
@@ -64,6 +67,9 @@ class LibraryPlugin extends SimplePlugin {
         }
         nexusStagingExtension.username = sonatypeUsername
         nexusStagingExtension.password = sonatypePassword
+
+        NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
+        nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
 
         project.publishing {
             publications {
@@ -142,8 +148,8 @@ class LibraryPlugin extends SimplePlugin {
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
-        project.tasks.getByName('publishToNexus').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('publishToNexus').dependsOn 'publish'
+        project.tasks.getByName('publishToSonatype').onlyIf { !project.isSnapshot }
+        project.tasks.getByName('publishToSonatype').dependsOn 'publish'
     }
 
 }
