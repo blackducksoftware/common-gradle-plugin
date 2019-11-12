@@ -105,6 +105,14 @@ publishToSonatype.onlyIf {
     !project.version.endsWith('-SNAPSHOT')
 }
 
+closeRepository.onlyIf {
+    !project.version.endsWith('-SNAPSHOT')
+}
+
+releaseRepository.onlyIf {
+    !project.version.endsWith('-SNAPSHOT')
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
