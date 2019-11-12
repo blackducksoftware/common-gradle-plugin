@@ -47,12 +47,10 @@ class LibraryPlugin extends SimplePlugin {
         project.tasks.create('deployLibrary', {
             dependsOn 'artifactoryPublish'
             dependsOn 'publish'
-            dependsOn 'publishToSonatype'
             dependsOn 'closeAndReleaseRepository'
             project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
             project.tasks.findByName('publish').mustRunAfter 'build'
-            project.tasks.findByName('publishToSonatype').mustRunAfter 'publish'
-            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publishToSonatype'
+            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publish'
         })
 
         configureForMavenCentralUpload(project)
@@ -71,11 +69,6 @@ class LibraryPlugin extends SimplePlugin {
         }
         nexusStagingExtension.username = sonatypeUsername
         nexusStagingExtension.password = sonatypePassword
-
-        NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
-        nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
-        nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
-        nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
 
         project.publishing {
             publications {
@@ -154,12 +147,10 @@ class LibraryPlugin extends SimplePlugin {
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
-        project.tasks.getByName('publishToSonatype').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('publishToSonatype').dependsOn 'publish'
         project.tasks.getByName('closeRepository').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('closeRepository').dependsOn 'publishToSonatype'
+        project.tasks.getByName('closeRepository').dependsOn 'publish'
         project.tasks.getByName('releaseRepository').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('releaseRepository').dependsOn 'publishToSonatype'
+        project.tasks.getByName('releaseRepository').dependsOn 'publish'
     }
 
 }
