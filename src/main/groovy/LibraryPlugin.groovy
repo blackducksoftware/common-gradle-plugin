@@ -31,6 +31,8 @@ import org.gradle.api.artifacts.maven.MavenDeployment
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugins.signing.SigningExtension
 
+import java.time.Duration
+
 /**
  * This plugin is intended for common libraries. They will be published to
  * maven central and artifactory, using the version (SNAPSHOT or release) to
@@ -70,8 +72,8 @@ class LibraryPlugin extends SimplePlugin {
 
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
         nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
-        nexusPublishExtension.clientTimeout = 5
-        nexusPublishExtension.connectTimeout = 5
+        nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
+        nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
 
         project.publishing {
             publications {
