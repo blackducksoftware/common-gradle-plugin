@@ -51,6 +51,7 @@ class LibraryPlugin extends SimplePlugin {
         configureForArtifactoryUpload(project)
         configureForNexusStagingAutoRelease(project)
 
+        // This must come after the configureForMavenCentralUpload because publishToSonatype does not exist until that is configured
         project.tasks.create('deployLibrary', {
             dependsOn 'artifactoryPublish'
             dependsOn 'publish'
@@ -76,6 +77,8 @@ class LibraryPlugin extends SimplePlugin {
         nexusStagingExtension.password = sonatypePassword
 
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
+        // The repositories configured determine the tasks that are created. See NexusPublishPlugin.kt
+        // Task names are determined by publishTo${repoName.capitalize()}
         nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
         nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
         nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
