@@ -25,6 +25,7 @@
 import de.marcphilipp.gradle.nexus.DefaultNexusRepositoryContainer
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import de.marcphilipp.gradle.nexus.NexusPublishPlugin
+import de.marcphilipp.gradle.nexus.NexusRepository
 import de.marcphilipp.gradle.nexus.NexusRepositoryContainer
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
@@ -51,9 +52,6 @@ class LibraryPlugin extends SimplePlugin {
         configureForMavenCentralUpload(project)
         configureForArtifactoryUpload(project)
         configureForNexusStagingAutoRelease(project)
-
-        // Need to re-apply the NexusPublishPlugin after the extension has been configured
-        project.plugins.findPlugin(NexusPublishPlugin.class).apply(project)
 
         // This must come after the configureForMavenCentralUpload because publishToSonatype does not exist until that is configured
         project.tasks.create('deployLibrary', {
@@ -84,8 +82,10 @@ class LibraryPlugin extends SimplePlugin {
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
         // The repositories configured determine the tasks that are created. See NexusPublishPlugin.kt
         // Task names are determined by publishTo${repoName.capitalize()}
-        DefaultNexusRepositoryContainer nexusRepository = new DefaultNexusRepositoryContainer()
-        nexusPublishExtension.repositories = nexusRepository.sonatype()
+        NexusRepository nexusRepository = new NexusRepository('sonatype', project)
+        nexusRepository.nexusUrl.set(URI.create("https://oss.sonatype.org/service/local/"))
+        nexusRepository.snapshotRepositoryUrl.set(URI.create("https://oss.sonatype.org/content/repositories/snapshots/"))
+        nexusPublishExtension.repositories.add(nexusRepository)
         nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
         nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
 
