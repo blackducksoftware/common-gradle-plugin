@@ -45,14 +45,14 @@ class LibraryPlugin extends SimplePlugin {
 
         project.plugins.apply('signing')
         project.plugins.apply(NexusStagingPlugin.class)
-        NexusPublishPlugin nexusPublishPlugin = project.plugins.apply(NexusPublishPlugin.class)
+        project.plugins.apply(NexusPublishPlugin.class)
 
         configureForMavenCentralUpload(project)
         configureForArtifactoryUpload(project)
         configureForNexusStagingAutoRelease(project)
 
         // Need to re-apply the NexusPublishPlugin after the extension has been configured
-        nexusPublishPlugin.apply(project)
+        project.plugins.findPlugin(NexusPublishPlugin.class).apply(project)
 
         // This must come after the configureForMavenCentralUpload because publishToSonatype does not exist until that is configured
         project.tasks.create('deployLibrary', {
