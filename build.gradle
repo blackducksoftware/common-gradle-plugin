@@ -92,6 +92,7 @@ nexusStaging {
     stagingProfileId = '324d855ef1398'
     username = sonatypeUsername
     password = sonatypePassword
+    numberOfRetries = 40
 }
 
 nexusPublishing {
