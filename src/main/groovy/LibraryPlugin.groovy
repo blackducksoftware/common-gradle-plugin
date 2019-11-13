@@ -45,11 +45,13 @@ class LibraryPlugin extends SimplePlugin {
 
         project.plugins.apply('signing')
         project.plugins.apply(NexusStagingPlugin.class)
-        project.plugins.apply(NexusPublishPlugin.class)
 
         configureForMavenCentralUpload(project)
         configureForArtifactoryUpload(project)
         configureForNexusStagingAutoRelease(project)
+
+        // This must come after the configureForMavenCentralUpload for the tasks to be created correctly
+        project.plugins.apply(NexusPublishPlugin.class)
 
         // This must come after the configureForMavenCentralUpload because publishToSonatype does not exist until that is configured
         project.tasks.create('deployLibrary', {
