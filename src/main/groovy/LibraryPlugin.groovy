@@ -22,6 +22,7 @@
  */
 
 
+import de.marcphilipp.gradle.nexus.DefaultNexusRepositoryContainer
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import de.marcphilipp.gradle.nexus.NexusPublishPlugin
 import de.marcphilipp.gradle.nexus.NexusRepositoryContainer
@@ -83,7 +84,8 @@ class LibraryPlugin extends SimplePlugin {
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
         // The repositories configured determine the tasks that are created. See NexusPublishPlugin.kt
         // Task names are determined by publishTo${repoName.capitalize()}
-        nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
+        DefaultNexusRepositoryContainer nexusRepository = new DefaultNexusRepositoryContainer()
+        nexusPublishExtension.repositories = nexusRepository.sonatype()
         nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
         nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
 
