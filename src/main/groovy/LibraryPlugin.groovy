@@ -47,6 +47,10 @@ class LibraryPlugin extends SimplePlugin {
         project.plugins.apply(NexusStagingPlugin.class)
         project.plugins.apply(NexusPublishPlugin.class)
 
+        configureForMavenCentralUpload(project)
+        configureForArtifactoryUpload(project)
+        configureForNexusStagingAutoRelease(project)
+
         project.tasks.create('deployLibrary', {
             dependsOn 'artifactoryPublish'
             dependsOn 'publish'
@@ -57,10 +61,6 @@ class LibraryPlugin extends SimplePlugin {
             project.tasks.findByName('publishToSonatype').mustRunAfter 'publish'
             project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publishToSonatype'
         })
-
-        configureForMavenCentralUpload(project)
-        configureForArtifactoryUpload(project)
-        configureForNexusStagingAutoRelease(project)
     }
 
     private void configureForMavenCentralUpload(Project project) {
