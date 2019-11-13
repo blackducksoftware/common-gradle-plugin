@@ -1,4 +1,5 @@
 import java.time.Duration
+import java.net.URI
 
 buildscript {
     repositories {
@@ -18,6 +19,7 @@ plugins {
     id 'com.jfrog.artifactory' version '4.9.3'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'io.codearte.nexus-staging' version '0.21.1'
+    id 'de.marcphilipp.nexus-publish' version '0.4.0'
 }
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
@@ -53,6 +55,9 @@ dependencies {
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.1'
 
+    //https://github.com/marcphilipp/nexus-publish-plugin
+    implementation 'de.marcphilipp.nexus-publish:de.marcphilipp.nexus-publish.gradle.plugin:0.4.0'
+
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     //https://plugins.gradle.org/plugin/org.sonarqube
     implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
@@ -87,6 +92,18 @@ nexusStaging {
     stagingProfileId = '324d855ef1398'
     username = sonatypeUsername
     password = sonatypePassword
+}
+
+nexusPublishing {
+    repositories {
+        sonatype()
+        connectTimeout = Duration.ofMinutes(5)
+        clientTimeout = Duration.ofMinutes(5)
+    }
+}
+
+publishToSonatype.onlyIf {
+    !project.version.endsWith('-SNAPSHOT')
 }
 
 closeRepository.onlyIf {
@@ -137,18 +154,6 @@ publishing {
                     developerConnection = "scm:git:git@github.com:blackducksoftware/${rootProject.name}.git"
                     url = "https://www.github.com/blackducksoftware/${rootProject.name}"
                 }
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-            def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username = sonatypeUsername
-                password = sonatypePassword
             }
         }
     }
