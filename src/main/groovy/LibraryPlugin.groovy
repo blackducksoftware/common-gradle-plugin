@@ -21,6 +21,10 @@
  * under the License.
  */
 
+
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
+import de.marcphilipp.gradle.nexus.NexusPublishPlugin
+import de.marcphilipp.gradle.nexus.NexusRepositoryContainer
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
@@ -41,14 +45,17 @@ class LibraryPlugin extends SimplePlugin {
 
         project.plugins.apply('signing')
         project.plugins.apply(NexusStagingPlugin.class)
+        project.plugins.apply(NexusPublishPlugin.class)
 
         project.tasks.create('deployLibrary', {
             dependsOn 'artifactoryPublish'
             dependsOn 'publish'
+            dependsOn 'publishToSonatype'
             dependsOn 'closeAndReleaseRepository'
             project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
             project.tasks.findByName('publish').mustRunAfter 'build'
-            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publish'
+            project.tasks.findByName('publishToSonatype').mustRunAfter 'publish'
+            project.tasks.findByName('closeAndReleaseRepository').mustRunAfter 'publishToSonatype'
         })
 
         configureForMavenCentralUpload(project)
@@ -67,6 +74,11 @@ class LibraryPlugin extends SimplePlugin {
         }
         nexusStagingExtension.username = sonatypeUsername
         nexusStagingExtension.password = sonatypePassword
+
+        NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
+        nexusPublishExtension.repositories = NexusRepositoryContainer.sonatype()
+        nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
+        nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
 
         project.publishing {
             publications {
@@ -111,18 +123,6 @@ class LibraryPlugin extends SimplePlugin {
                     }
                 }
             }
-
-            repositories {
-                maven {
-                    def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                    def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-                    url = project.rootProject.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-                    credentials {
-                        username = sonatypeUsername
-                        password = sonatypePassword
-                    }
-                }
-            }
         }
 
         project.tasks.getByName('publish').dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
@@ -145,10 +145,12 @@ class LibraryPlugin extends SimplePlugin {
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
+        project.tasks.getByName('publishToSonatype').onlyIf { !project.isSnapshot }
+        project.tasks.getByName('publishToSonatype').dependsOn 'publish'
         project.tasks.getByName('closeRepository').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('closeRepository').dependsOn 'publish'
+        project.tasks.getByName('closeRepository').dependsOn 'publishToSonatype'
         project.tasks.getByName('releaseRepository').onlyIf { !project.isSnapshot }
-        project.tasks.getByName('releaseRepository').dependsOn 'publish'
+        project.tasks.getByName('releaseRepository').dependsOn 'publishToSonatype'
     }
 
 }
