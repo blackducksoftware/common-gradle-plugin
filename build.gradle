@@ -16,7 +16,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'eclipse'
-    id 'com.jfrog.artifactory' version '4.9.3'
+    id 'com.jfrog.artifactory' version '4.10.0'
     id 'com.github.hierynomus.license' version '0.14.0'
     id 'io.codearte.nexus-staging' version '0.21.1'
     id 'de.marcphilipp.nexus-publish' version '0.4.0'
@@ -44,7 +44,7 @@ dependencies {
 
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
-    implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.9.3'
+    implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.10.0'
 
     //https://github.com/hierynomus/license-gradle-plugin
     implementation 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
