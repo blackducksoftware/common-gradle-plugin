@@ -1,7 +1,7 @@
 /*
  * common-gradle-plugin
  *
- * Copyright (c) 2019 Synopsys, Inc.
+ * Copyright (c) 2020 Synopsys, Inc.
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
@@ -20,18 +20,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-
-import de.marcphilipp.gradle.nexus.DefaultNexusRepositoryContainer
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import de.marcphilipp.gradle.nexus.NexusPublishPlugin
 import de.marcphilipp.gradle.nexus.NexusRepository
-import de.marcphilipp.gradle.nexus.NexusRepositoryContainer
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.maven.MavenDeployment
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugins.signing.SigningExtension
 
@@ -72,8 +66,8 @@ class LibraryPlugin extends SimplePlugin {
         NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
 
         if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
-            nexusStagingExtension.packageGroup = 'com.blackducksoftware'
-            nexusStagingExtension.stagingProfileId = '324d855ef1398'
+            nexusStagingExtension.packageGroup = 'com.synopsys'
+            nexusStagingExtension.stagingProfileId = '4af8bea8300633'
         }
         nexusStagingExtension.username = sonatypeUsername
         nexusStagingExtension.password = sonatypePassword
@@ -150,7 +144,7 @@ class LibraryPlugin extends SimplePlugin {
             artifactoryRepo = project.ext.artifactoryReleaseRepo
         }
 
-        configureDefaultsForArtifactory(project, artifactoryRepo, { publications ('mavenJava') })
+        configureDefaultsForArtifactory(project, artifactoryRepo, { publications('mavenJava') })
     }
 
     private void configureForNexusStagingAutoRelease(Project project) {
