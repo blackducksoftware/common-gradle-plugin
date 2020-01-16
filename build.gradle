@@ -1,5 +1,4 @@
 import java.time.Duration
-import java.net.URI
 
 buildscript {
     repositories {
@@ -34,7 +33,7 @@ targetCompatibility = 1.8
 
 repositories {
     mavenLocal()
-    maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
+    maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}" }
     mavenCentral()
     maven { url 'https://plugins.gradle.org/m2/' }
 }
@@ -88,8 +87,8 @@ license {
 tasks.getByName('build').dependsOn(licenseFormatMain)
 
 nexusStaging {
-    packageGroup = 'com.blackducksoftware'
-    stagingProfileId = '324d855ef1398'
+    packageGroup = 'com.synopsys'
+    stagingProfileId = '4af8bea8300633'
     username = sonatypeUsername
     password = sonatypePassword
     numberOfRetries = 40
@@ -182,7 +181,7 @@ artifactory {
             username = artifactoryDeployerUsername
             password = artifactoryDeployerPassword
         }
-        defaults { publications ('mavenJava') }
+        defaults { publications('mavenJava') }
     }
     resolve {
         repository {
