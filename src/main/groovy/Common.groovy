@@ -107,7 +107,7 @@ abstract class Common implements Plugin<Project> {
 
         project.repositories {
             mavenLocal()
-            maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}"}
+            maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}" }
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
@@ -133,7 +133,7 @@ abstract class Common implements Plugin<Project> {
             }
         }
         if (!project.group) {
-            project.group = 'com.blackducksoftware.integration'
+            project.group = 'com.synopsys.integration'
         }
 
         configureForJava(project)
@@ -318,8 +318,7 @@ abstract class Common implements Plugin<Project> {
     void installFile(String downloadUrl, File projectFile) {
         def downloadedFile = new URL(downloadUrl)
 
-        projectFile.withOutputStream { out ->
-            downloadedFile.withInputStream { from -> out << from }
+        projectFile.withOutputStream { out -> downloadedFile.withInputStream { from -> out << from }
         }
     }
 

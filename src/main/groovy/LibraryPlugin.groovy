@@ -111,10 +111,10 @@ class LibraryPlugin extends SimplePlugin {
                         developers {
                             developer {
                                 id = 'blackduckoss'
-                                name = 'Black Duck OSS'
-                                email = 'bdsoss@blackducksoftware.com'
-                                organization = 'Black Duck Software, Inc.'
-                                organizationUrl = 'http://www.blackducksoftware.com'
+                                name = 'Synopsys OSS'
+                                email = 'oss@synopsys.com'
+                                organization = 'Synopsys, Inc.'
+                                organizationUrl = 'http://www.synopsys.com'
                                 timezone = 'America/New_York'
                             }
                         }

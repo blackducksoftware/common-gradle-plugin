@@ -24,8 +24,8 @@ plugins {
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
-group = 'com.blackducksoftware.integration'
-version = '0.0.87-SNAPSHOT'
+group = 'com.synopsys.integration'
+version = '1.0.0-SNAPSHOT'
 description = 'A common plugin for all integration libraries and solutions to use.'
 
 sourceCompatibility = 1.8
@@ -87,8 +87,8 @@ license {
 tasks.getByName('build').dependsOn(licenseFormatMain)
 
 nexusStaging {
-    packageGroup = 'com.blackducksoftware'
-    stagingProfileId = '324d855ef1398'
+    packageGroup = 'com.synopsys'
+    stagingProfileId = '4af8bea8300633'
     username = sonatypeUsername
     password = sonatypePassword
     numberOfRetries = 40
@@ -142,10 +142,10 @@ publishing {
                 developers {
                     developer {
                         id = 'blackduckoss'
-                        name = 'Black Duck OSS'
-                        email = 'bdsoss@blackducksoftware.com'
-                        organization = 'Black Duck Software, Inc.'
-                        organizationUrl = 'http://www.blackducksoftware.com'
+                        name = 'Synopsys OSS'
+                        email = 'oss@synopsys.com'
+                        organization = 'Synopsys, Inc.'
+                        organizationUrl = 'https://www.synopsys.com'
                         timezone = 'America/New_York'
                     }
                 }
