@@ -178,6 +178,13 @@ abstract class Common implements Plugin<Project> {
             xml.enabled = true
             html.enabled = true
         }
+
+        project.tasks.create('jaloja'){
+            doLast {
+                println "Ja'loja!!!!!!"
+                println project.version
+            }
+        }
     }
 
     public void configureForLicense(Project project) {
