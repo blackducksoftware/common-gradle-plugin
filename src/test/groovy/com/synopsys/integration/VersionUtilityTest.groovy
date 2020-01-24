@@ -16,7 +16,6 @@ class VersionUtilityTest {
         assertEquals('6.1.0', versionUtility.calculateReleaseVersion('6.1.0'))
         assertEquals('6.1.0', versionUtility.calculateReleaseVersion('6.1.0-SNAPSHOT'))
         assertEquals('6.1.0', versionUtility.calculateReleaseVersion('6.1.0-SIGQA1'))
-        assertEquals('6.1.0', versionUtility.calculateReleaseVersion('6.1.0-SIGQA1-thing124531'))
         assertEquals('6.1.0', versionUtility.calculateReleaseVersion('6.1.0-SIGQA2-SNAPSHOT'))
         assertEquals('6.1.0', versionUtility.calculateReleaseVersion('6.1.0-SIGQA59932'))
 
@@ -55,7 +54,6 @@ class VersionUtilityTest {
         assertEquals('6.1.0-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0'))
         assertEquals('6.1.0-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0-SNAPSHOT'))
         assertEquals('6.1.0-SIGQA2', versionUtility.calculateNextQAVersion('6.1.0-SIGQA1'))
-        assertEquals('6.1.0-SIGQA2-thing124531', versionUtility.calculateNextQAVersion('6.1.0-SIGQA1-thing124531'))
         assertEquals('6.1.0-SIGQA3', versionUtility.calculateNextQAVersion('6.1.0-SIGQA2-SNAPSHOT'))
         assertEquals('6.1.0-SIGQA59933', versionUtility.calculateNextQAVersion('6.1.0-SIGQA59932'))
 
@@ -108,6 +106,7 @@ class VersionUtilityTest {
         assertEquals('6.1.0-ALPHA3-SIGQA34-SNAPSHOT', versionUtility.calculateNextSnapshot('6.1.0-ALPHA3-SIGQA34-SNAPSHOT'))
         assertEquals('6.1.0-ALPHA3.5-SIGQA34-SNAPSHOT', versionUtility.calculateNextSnapshot('6.1.0-ALPHA3.5-SIGQA34-SNAPSHOT'))
         assertEquals('6.1.0-BETA-SNAPSHOT', versionUtility.calculateNextSnapshot('6.1.0-BETA-SNAPSHOT'))
+        assertEquals('6.1.1-BETA-SNAPSHOT', versionUtility.calculateNextSnapshot('6.1.0-BETA'))
 
         assertEquals('2020.1.0-SIGQA1-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0-SIGQA1-SNAPSHOT'))
         assertEquals('2020.1.0.88-SIGQA1-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0.88-SIGQA1-SNAPSHOT'))

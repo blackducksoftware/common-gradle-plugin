@@ -29,20 +29,23 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 class VersionUtility {
+    public static String SUFFIX_SNAPSHOT = '-SNAPSHOT'
+    public static String SUFFIX_SIGQA = '-SIGQA'
+
     String calculateReleaseVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
-        version = StringUtils.removeEnd(version, '-SNAPSHOT')
-        version = RegExUtils.removePattern(version, '-SIGQA.*')
+        version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
+        version = RegExUtils.removePattern(version, SUFFIX_SIGQA + '[0-9]+')
         return version
     }
 
     String calculateNextQAVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
         if (StringUtils.isNotBlank(version)) {
-            version = StringUtils.removeEnd(version, '-SNAPSHOT')
-            if (StringUtils.contains(version, '-SIGQA')) {
-                String finalQAVersionPiece = StringUtils.substringAfterLast(version, '-SIGQA')
-                String newVersion = StringUtils.substringBeforeLast(version, '-SIGQA')
+            version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
+            if (StringUtils.contains(version, SUFFIX_SIGQA)) {
+                String finalQAVersionPiece = StringUtils.substringAfterLast(version, SUFFIX_SIGQA)
+                String newVersion = StringUtils.substringBeforeLast(version, SUFFIX_SIGQA)
 
                 Matcher matcher = Pattern.compile("\\d+").matcher(finalQAVersionPiece)
                 matcher.find()
@@ -51,9 +54,9 @@ class VersionUtility {
 
                 finalQAVersionPiece = finalQAVersionPiece.replaceFirst(qaVersionNumber, String.valueOf(nextVersion))
 
-                version = newVersion + '-SIGQA' + finalQAVersionPiece
+                version = newVersion + SUFFIX_SIGQA + finalQAVersionPiece
             } else {
-                version += '-SIGQA1'
+                version += SUFFIX_SIGQA + '1'
             }
         }
         return version
@@ -61,10 +64,10 @@ class VersionUtility {
 
     String calculateNextSnapshot(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
-        if (StringUtils.isNotBlank(version) && !StringUtils.endsWith(version, '-SNAPSHOT')) {
-            if (StringUtils.contains(version, '-SIGQA')) {
+        if (StringUtils.isNotBlank(version) && !StringUtils.endsWith(version, SUFFIX_SNAPSHOT)) {
+            if (StringUtils.contains(version, SUFFIX_SIGQA)) {
                 version = calculateNextQAVersion(version)
-                version += '-SNAPSHOT'
+                version += SUFFIX_SNAPSHOT
             } else {
                 Matcher matcher = Pattern.compile('(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+){0,1})').matcher(version)
                 if (matcher.find()) {
@@ -88,9 +91,9 @@ class VersionUtility {
                     String newVersion = StringUtils.removeEnd(originalVersion, finalVersionNumber)
                     newVersion += nextVersion
 
-                    version = version.replaceFirst(originalVersion, newVersion) + '-SNAPSHOT'
+                    version = version.replaceFirst(originalVersion, newVersion) + SUFFIX_SNAPSHOT
                 } else {
-                    version += '-SNAPSHOT'
+                    version += SUFFIX_SNAPSHOT
                 }
             }
         }
