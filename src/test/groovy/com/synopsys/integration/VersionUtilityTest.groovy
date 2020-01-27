@@ -111,7 +111,9 @@ class VersionUtilityTest {
         assertEquals('2020.1.0-SIGQA1-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0-SIGQA1-SNAPSHOT'))
         assertEquals('2020.1.0.88-SIGQA1-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0.88-SIGQA1-SNAPSHOT'))
         assertEquals('2020.1.0.89-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0.88'))
-        assertEquals('jaloja-SNAPSHOT', versionUtility.calculateNextSnapshot('jaloja'))
+        assertEquals('2020.1.0.4.5.1-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0.4.5.0'))
+        assertEquals('2020.1.0.4.5.0.8.4.5-SNAPSHOT', versionUtility.calculateNextSnapshot('2020.1.0.4.5.0.8.4.4'))
+        assertEquals('jaloja1-SNAPSHOT', versionUtility.calculateNextSnapshot('jaloja'))
 
         assertEquals('junk.1.1.1-SNAPSHOT', versionUtility.calculateNextSnapshot('junk.1.1.1-SNAPSHOT'))
         assertEquals('junk.1.1.1-SIGQA34-SNAPSHOT', versionUtility.calculateNextSnapshot('junk.1.1.1-SIGQA34-SNAPSHOT'))

@@ -69,7 +69,7 @@ class VersionUtility {
                 version = calculateNextQAVersion(version)
                 version += SUFFIX_SNAPSHOT
             } else {
-                Matcher matcher = Pattern.compile('(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+){0,1})').matcher(version)
+                Matcher matcher = Pattern.compile('(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)').matcher(version)
                 if (matcher.find()) {
                     String originalVersion = matcher.group()
 
@@ -79,7 +79,7 @@ class VersionUtility {
                         String numberInGroup = matcher.group(group)
                         if (StringUtils.isNotBlank(numberInGroup)) {
                             if (numberInGroup.contains('.')) {
-                                finalVersionNumber = StringUtils.remove(numberInGroup, '.')
+                                finalVersionNumber = StringUtils.substringAfterLast(numberInGroup, '.')
                             } else {
                                 finalVersionNumber = numberInGroup
                             }
@@ -93,7 +93,7 @@ class VersionUtility {
 
                     version = version.replaceFirst(originalVersion, newVersion) + SUFFIX_SNAPSHOT
                 } else {
-                    version += SUFFIX_SNAPSHOT
+                    version += '1' + SUFFIX_SNAPSHOT
                 }
             }
         }
