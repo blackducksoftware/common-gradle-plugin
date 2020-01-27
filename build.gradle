@@ -41,8 +41,8 @@ repositories {
 dependencies {
     implementation gradleApi()
 
-    testCompileOnly 'junit:junit:4.12'
-    testCompileOnly 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 
     implementation 'org.apache.commons:commons-lang3:3.9'
 
@@ -65,6 +65,10 @@ dependencies {
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     //https://plugins.gradle.org/plugin/org.sonarqube
     implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:+' } }
