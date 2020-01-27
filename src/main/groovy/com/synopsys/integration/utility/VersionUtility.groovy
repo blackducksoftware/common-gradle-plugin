@@ -31,15 +31,16 @@ import java.util.regex.Pattern
 class VersionUtility {
     public static String SUFFIX_SNAPSHOT = '-SNAPSHOT'
     public static String SUFFIX_SIGQA = '-SIGQA'
+    public static String VERSION_PATTERN = '(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)'
 
-    String calculateReleaseVersion(String currentVersion) {
+    public String calculateReleaseVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
         version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
         version = RegExUtils.removePattern(version, SUFFIX_SIGQA + '[0-9]+')
         return version
     }
 
-    String calculateNextQAVersion(String currentVersion) {
+    public String calculateNextQAVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
         if (StringUtils.isNotBlank(version)) {
             version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
@@ -62,14 +63,14 @@ class VersionUtility {
         return version
     }
 
-    String calculateNextSnapshot(String currentVersion) {
+    public String calculateNextSnapshot(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
         if (StringUtils.isNotBlank(version) && !StringUtils.endsWith(version, SUFFIX_SNAPSHOT)) {
             if (StringUtils.contains(version, SUFFIX_SIGQA)) {
                 version = calculateNextQAVersion(version)
                 version += SUFFIX_SNAPSHOT
             } else {
-                Matcher matcher = Pattern.compile('(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)').matcher(version)
+                Matcher matcher = Pattern.compile(VERSION_PATTERN).matcher(version)
                 if (matcher.find()) {
                     String originalVersion = matcher.group()
 
