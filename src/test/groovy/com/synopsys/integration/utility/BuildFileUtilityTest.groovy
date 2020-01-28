@@ -73,8 +73,96 @@ class BuildFileUtilityTest {
     }
 
     @Test
+    void updateVersionContentQAVersionTest() {
+        String buildFileContent = """
+                    version = '1.0.1-SNAPSHOT'
+                """
+        String buildFileContentExpected = """
+                    version = '23.45.765-SIGQA1'
+                """
+
+        String newVersion = '23.45.765-SIGQA1'
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
+    void updateVersionContentQAVersionToSNAPSHOTTest() {
+        String buildFileContent = """
+                    version = '1.0.1-SIGQA369'
+                """
+        String buildFileContentExpected = """
+                    version = '23.45.765-SIGQA789709-SNAPSHOT'
+                """
+
+        String newVersion = '23.45.765-SIGQA789709-SNAPSHOT'
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
+    void updateVersionContentQASNAPSHOTToReleaseTest() {
+        String buildFileContent = """
+                    version = '1.0.1-SIGQA369-SNAPSHOT'
+                """
+        String buildFileContentExpected = """
+                    version = '23.45.765'
+                """
+
+        String newVersion = '23.45.765'
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
+    void updateVersionContentReleaseToSNAPSHOTTest() {
+        String buildFileContent = """
+                    version = '1.0.1'
+                """
+        String buildFileContentExpected = """
+                    version = '23.45.765-SNAPSHOT'
+                """
+
+        String newVersion = '23.45.765-SNAPSHOT'
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
+    void updateVersionContentDoubleVersionTest() {
+        String buildFileContent = """
+                    version = '1.0.1-SNAPSHOT'
+                    description = "version = '1.0.1-SNAPSHOT'"
+                """
+        String buildFileContentExpected = """
+                    version = '23.45.765-SNAPSHOT'
+                    description = "version = '23.45.765-SNAPSHOT'"
+                """
+
+        String newVersion = '23.45.765-SNAPSHOT'
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
     void updateVersionContentByFileTest() {
         File buildFile = File.createTempFile('test_build', '.gradle', new File('build'))
+        buildFile.deleteOnExit()
         buildFile << """
                     buildscript {
                         repositories {

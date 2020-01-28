@@ -21,6 +21,8 @@
  * under the License.
  */
 import com.hierynomus.gradle.license.LicenseBasePlugin
+import com.synopsys.integration.utility.BuildFileUtility
+import com.synopsys.integration.utility.VersionUtility
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.*
@@ -138,6 +140,7 @@ abstract class Common implements Plugin<Project> {
 
         configureForJava(project)
         configureForLicense(project)
+        configureForReleases(project)
         configureForSonarQube(project)
         configureForTesting(project)
     }
@@ -178,7 +181,6 @@ abstract class Common implements Plugin<Project> {
             xml.enabled = true
             html.enabled = true
         }
-        
     }
 
     public void configureForLicense(Project project) {
@@ -202,6 +204,50 @@ abstract class Common implements Plugin<Project> {
         registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
         registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
     }
+
+    public void configureForReleases(Project project) {
+        VersionUtility versionUtility = new VersionUtility()
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        
+        Closure releaseClosure = {
+            String currentVersion = project.version
+            println "Updating current version ${currentVersion} to a release version"
+            String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
+            println "New release version ${newVersion}"
+            project.version = newVersion
+            buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+        }
+
+        project.tasks.create('releaseVersion') {
+            doLast releaseClosure
+        }
+        project.tasks.create('jaloja') {
+            doLast releaseClosure
+        }
+
+        project.tasks.create('qaVersion') {
+            doLast {
+                String currentVersion = project.version
+                println "Updating current version ${currentVersion} to a qa version"
+                String newVersion = versionUtility.calculateNextQAVersion(currentVersion)
+                println "New qa version ${newVersion}"
+                project.version = newVersion
+                buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+            }
+        }
+
+        project.tasks.create('snapshotVersion') {
+            doLast {
+                String currentVersion = project.version
+                println "Updating current version ${currentVersion} to a snapshot version"
+                String newVersion = versionUtility.calculateNextSnapshot(currentVersion)
+                println "New snapshot version ${newVersion}"
+                project.version = newVersion
+                buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+            }
+        }
+    }
+
 
     public void configureForSonarQube(Project project) {
         SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube')

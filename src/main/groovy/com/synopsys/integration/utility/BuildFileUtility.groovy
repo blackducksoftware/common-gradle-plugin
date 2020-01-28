@@ -39,7 +39,7 @@ class BuildFileUtility {
     }
 
     public String getVersionLinePattern() {
-        return "version\\s*=\\s*[\"\']?${VersionUtility.VERSION_PATTERN}(-SNAPSHOT)?[\"\']?"
+        return "version\\s*=\\s*[\"\']?${VersionUtility.VERSION_PATTERN}(${VersionUtility.SUFFIX_SIGQA}\\d+)?(${VersionUtility.SUFFIX_SNAPSHOT})?[\"\']?"
     }
 
     public String getNewVersionLine(String version) {
