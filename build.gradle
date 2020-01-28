@@ -41,6 +41,11 @@ repositories {
 dependencies {
     implementation gradleApi()
 
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+
+    implementation 'org.apache.commons:commons-lang3:3.9'
+
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
     implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.10.0'
@@ -60,6 +65,10 @@ dependencies {
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     //https://plugins.gradle.org/plugin/org.sonarqube
     implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 configurations.all { resolutionStrategy { force 'org.codehaus.groovy:groovy-all:+' } }
