@@ -209,7 +209,7 @@ abstract class Common implements Plugin<Project> {
         VersionUtility versionUtility = new VersionUtility()
         BuildFileUtility buildFileUtility = new BuildFileUtility()
 
-        project.tasks.create('releaseVersion') {
+        project.tasks.create('jaloja') {
             doLast {
                 String currentVersion = project.version
                 println "Updating current version ${currentVersion} to a release version"
@@ -217,10 +217,11 @@ abstract class Common implements Plugin<Project> {
                 println "New release version ${newVersion}"
                 project.version = newVersion
                 buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+                println "Ja'loja!!!!!"
             }
         }
 
-        project.tasks.create('qaVersion') {
+        project.tasks.create('qaJaloja') {
             doLast {
                 String currentVersion = project.version
                 println "Updating current version ${currentVersion} to a qa version"
@@ -228,10 +229,11 @@ abstract class Common implements Plugin<Project> {
                 println "New qa version ${newVersion}"
                 project.version = newVersion
                 buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+                println "Ja'loja!!!!!"
             }
         }
 
-        project.tasks.create('snapshotVersion') {
+        project.tasks.create('snapshotJaloja') {
             doLast {
                 String currentVersion = project.version
                 println "Updating current version ${currentVersion} to a snapshot version"
@@ -239,6 +241,7 @@ abstract class Common implements Plugin<Project> {
                 println "New snapshot version ${newVersion}"
                 project.version = newVersion
                 buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+                println "Ja'loja!!!!!"
             }
         }
     }
