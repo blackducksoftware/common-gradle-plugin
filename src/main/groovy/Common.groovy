@@ -216,7 +216,7 @@ abstract class Common implements Plugin<Project> {
                 String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
                 println "New release version ${newVersion}"
                 project.version = newVersion
-                buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+                buildFileUtility.updateVersion(project.getBuildFile(), currentVersion, newVersion)
                 println "Ja'loja!!!!!"
             }
         }
@@ -228,7 +228,7 @@ abstract class Common implements Plugin<Project> {
                 String newVersion = versionUtility.calculateNextQAVersion(currentVersion)
                 println "New qa version ${newVersion}"
                 project.version = newVersion
-                buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+                buildFileUtility.updateVersion(project.getBuildFile(), currentVersion, newVersion)
                 println "Ja'loja!!!!!"
             }
         }
@@ -240,7 +240,7 @@ abstract class Common implements Plugin<Project> {
                 String newVersion = versionUtility.calculateNextSnapshot(currentVersion)
                 println "New snapshot version ${newVersion}"
                 project.version = newVersion
-                buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+                buildFileUtility.updateVersion(project.getBuildFile(), currentVersion, newVersion)
                 println "Ja'loja!!!!!"
             }
         }

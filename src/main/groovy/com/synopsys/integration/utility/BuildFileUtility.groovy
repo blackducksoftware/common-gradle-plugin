@@ -23,23 +23,23 @@
 package com.synopsys.integration.utility
 
 class BuildFileUtility {
-    public void updateVersion(File buildFile, String newVersion) {
+    public void updateVersion(File buildFile, String currentVersion, String newVersion) {
         String buildFileContents = buildFile.text
-        String newBuildFileContents = updateVersion(buildFileContents, newVersion)
+        String newBuildFileContents = updateVersion(buildFileContents, currentVersion, newVersion)
 
         buildFile.text = newBuildFileContents
     }
 
-    public String updateVersion(String buildFileContents, String newVersion) {
-        String versionLinePattern = getVersionLinePattern()
+    public String updateVersion(String buildFileContents, String currentVersion, String newVersion) {
+        String versionLinePattern = getVersionLinePattern(currentVersion)
         String newVersionLine = getNewVersionLine(newVersion)
 
         String newContents = buildFileContents.replaceAll(versionLinePattern, newVersionLine)
         return newContents
     }
 
-    public String getVersionLinePattern() {
-        return "version\\s*=\\s*[\"\']?${VersionUtility.VERSION_PATTERN}(${VersionUtility.SUFFIX_SIGQA}\\d+)?(${VersionUtility.SUFFIX_SNAPSHOT})?[\"\']?"
+    public String getVersionLinePattern(String currentVersion) {
+        return "version\\s*=\\s*[\"\']?${currentVersion}[\"\']?"
     }
 
     public String getNewVersionLine(String version) {

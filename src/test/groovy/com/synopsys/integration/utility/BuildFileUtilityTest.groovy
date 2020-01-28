@@ -46,11 +46,11 @@ class BuildFileUtilityTest {
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
                     }
                 """
-
+        String currentVersion = '1.0.1-SNAPSHOT'
         String newVersion = '23.45.765-SNAPSHOT'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -63,11 +63,11 @@ class BuildFileUtilityTest {
         String buildFileContentExpected = """
                     version = '23.45.765-SNAPSHOT'
                 """
-
+        String currentVersion = '1.0.1-SNAPSHOT'
         String newVersion = '23.45.765-SNAPSHOT'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -80,11 +80,11 @@ class BuildFileUtilityTest {
         String buildFileContentExpected = """
                     version = '23.45.765-SIGQA1'
                 """
-
+        String currentVersion = '1.0.1-SNAPSHOT'
         String newVersion = '23.45.765-SIGQA1'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -97,11 +97,11 @@ class BuildFileUtilityTest {
         String buildFileContentExpected = """
                     version = '23.45.765-SIGQA789709-SNAPSHOT'
                 """
-
+        String currentVersion = '1.0.1-SIGQA369'
         String newVersion = '23.45.765-SIGQA789709-SNAPSHOT'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -114,11 +114,11 @@ class BuildFileUtilityTest {
         String buildFileContentExpected = """
                     version = '23.45.765'
                 """
-
+        String currentVersion = '1.0.1-SIGQA369-SNAPSHOT'
         String newVersion = '23.45.765'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -131,11 +131,11 @@ class BuildFileUtilityTest {
         String buildFileContentExpected = """
                     version = '23.45.765-SNAPSHOT'
                 """
-
+        String currentVersion = '1.0.1'
         String newVersion = '23.45.765-SNAPSHOT'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -150,11 +150,11 @@ class BuildFileUtilityTest {
                     version = '23.45.765-SNAPSHOT'
                     description = "version = '23.45.765-SNAPSHOT'"
                 """
-
+        String currentVersion = '1.0.1-SNAPSHOT'
         String newVersion = '23.45.765-SNAPSHOT'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, newVersion)
+        String newBuildFileContent = buildFileUtility.updateVersion(buildFileContent, currentVersion, newVersion)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -201,10 +201,11 @@ class BuildFileUtilityTest {
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
                     }
                 """
+        String currentVersion = '1.0.1-SNAPSHOT'
         String newVersion = '23.45.765-SNAPSHOT'
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        buildFileUtility.updateVersion(buildFile, newVersion)
+        buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
         String newBuildFileContent = buildFile.text
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
