@@ -208,21 +208,16 @@ abstract class Common implements Plugin<Project> {
     public void configureForReleases(Project project) {
         VersionUtility versionUtility = new VersionUtility()
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        
-        Closure releaseClosure = {
-            String currentVersion = project.version
-            println "Updating current version ${currentVersion} to a release version"
-            String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
-            println "New release version ${newVersion}"
-            project.version = newVersion
-            buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
-        }
 
         project.tasks.create('releaseVersion') {
-            doLast releaseClosure
-        }
-        project.tasks.create('jaloja') {
-            doLast releaseClosure
+            doLast {
+                String currentVersion = project.version
+                println "Updating current version ${currentVersion} to a release version"
+                String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
+                println "New release version ${newVersion}"
+                project.version = newVersion
+                buildFileUtility.updateVersion(project.getBuildFile(), newVersion)
+            }
         }
 
         project.tasks.create('qaVersion') {
