@@ -106,8 +106,8 @@ nexusStaging {
 nexusPublishing {
     repositories {
         sonatype()
-        connectTimeout = Duration.ofMinutes(5)
-        clientTimeout = Duration.ofMinutes(5)
+        connectTimeout = Duration.ofMinutes(10)
+        clientTimeout = Duration.ofMinutes(10)
     }
 }
 

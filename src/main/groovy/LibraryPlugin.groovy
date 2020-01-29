@@ -71,7 +71,7 @@ class LibraryPlugin extends SimplePlugin {
         }
         nexusStagingExtension.username = sonatypeUsername
         nexusStagingExtension.password = sonatypePassword
-        nexusStagingExtension.numberOfRetries = 40
+        nexusStagingExtension.numberOfRetries = 50
 
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
         // The repositories configured determine the tasks that are created. See NexusPublishPlugin.kt
@@ -80,8 +80,8 @@ class LibraryPlugin extends SimplePlugin {
         nexusRepository.nexusUrl.set(URI.create("https://oss.sonatype.org/service/local/"))
         nexusRepository.snapshotRepositoryUrl.set(URI.create("https://oss.sonatype.org/content/repositories/snapshots/"))
         nexusPublishExtension.repositories.add(nexusRepository)
-        nexusPublishExtension.clientTimeout = Duration.ofMinutes(5)
-        nexusPublishExtension.connectTimeout = Duration.ofMinutes(5)
+        nexusPublishExtension.clientTimeout = Duration.ofMinutes(10)
+        nexusPublishExtension.connectTimeout = Duration.ofMinutes(10)
 
         project.publishing {
             publications {
