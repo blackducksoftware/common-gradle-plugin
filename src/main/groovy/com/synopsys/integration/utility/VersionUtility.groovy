@@ -43,8 +43,13 @@ class VersionUtility {
     public String calculateNextQAVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
         if (StringUtils.isNotBlank(version)) {
-            version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
-            if (StringUtils.contains(version, SUFFIX_SIGQA)) {
+            if (!StringUtils.contains(version, SUFFIX_SIGQA) && StringUtils.endsWith(version, SUFFIX_SNAPSHOT)) {
+                version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
+                version += SUFFIX_SIGQA + '1'
+            } else if (StringUtils.contains(version, SUFFIX_SIGQA) && StringUtils.endsWith(version, SUFFIX_SNAPSHOT)) {
+                version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
+            } else if (StringUtils.contains(version, SUFFIX_SIGQA)) {
+                version = StringUtils.removeEnd(version, SUFFIX_SNAPSHOT)
                 String finalQAVersionPiece = StringUtils.substringAfterLast(version, SUFFIX_SIGQA)
                 String newVersion = StringUtils.substringBeforeLast(version, SUFFIX_SIGQA)
 

@@ -55,7 +55,7 @@ class VersionUtilityTest {
         assertEquals('6.1.0-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0'))
         assertEquals('6.1.0-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0-SNAPSHOT'))
         assertEquals('6.1.0-SIGQA2', versionUtility.calculateNextQAVersion('6.1.0-SIGQA1'))
-        assertEquals('6.1.0-SIGQA3', versionUtility.calculateNextQAVersion('6.1.0-SIGQA2-SNAPSHOT'))
+        assertEquals('6.1.0-SIGQA2', versionUtility.calculateNextQAVersion('6.1.0-SIGQA2-SNAPSHOT'))
         assertEquals('6.1.0-SIGQA59933', versionUtility.calculateNextQAVersion('6.1.0-SIGQA59932'))
 
         assertEquals('6.1.0-RC-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0-RC'))
@@ -66,20 +66,20 @@ class VersionUtilityTest {
         assertEquals('6.1.0+RC1.4-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0+RC1.4'))
         assertEquals('1.1.1+RC1.1.1-SIGQA1', versionUtility.calculateNextQAVersion('1.1.1+RC1.1.1'))
 
-        assertEquals('6.1.0-ALPHA3-SIGQA35', versionUtility.calculateNextQAVersion('6.1.0-ALPHA3-SIGQA34-SNAPSHOT'))
-        assertEquals('6.1.0-ALPHA3.5-SIGQA35', versionUtility.calculateNextQAVersion('6.1.0-ALPHA3.5-SIGQA34-SNAPSHOT'))
+        assertEquals('6.1.0-ALPHA3-SIGQA34', versionUtility.calculateNextQAVersion('6.1.0-ALPHA3-SIGQA34-SNAPSHOT'))
+        assertEquals('6.1.0-ALPHA3.5-SIGQA34', versionUtility.calculateNextQAVersion('6.1.0-ALPHA3.5-SIGQA34-SNAPSHOT'))
         assertEquals('6.1.0-BETA-SIGQA1', versionUtility.calculateNextQAVersion('6.1.0-BETA-SNAPSHOT'))
 
-        assertEquals('2020.1.0-SIGQA2', versionUtility.calculateNextQAVersion('2020.1.0-SIGQA1-SNAPSHOT'))
-        assertEquals('2020.1.0.88-SIGQA2', versionUtility.calculateNextQAVersion('2020.1.0.88-SIGQA1-SNAPSHOT'))
+        assertEquals('2020.1.0-SIGQA1', versionUtility.calculateNextQAVersion('2020.1.0-SIGQA1-SNAPSHOT'))
+        assertEquals('2020.1.0.88-SIGQA1', versionUtility.calculateNextQAVersion('2020.1.0.88-SIGQA1-SNAPSHOT'))
         assertEquals('2020.1.0.88-SIGQA1', versionUtility.calculateNextQAVersion('2020.1.0.88'))
         assertEquals('jaloja-SIGQA1', versionUtility.calculateNextQAVersion('jaloja'))
 
         assertEquals('junk.1.1.1-SIGQA1', versionUtility.calculateNextQAVersion('junk.1.1.1-SNAPSHOT'))
-        assertEquals('junk.1.1.1-SIGQA35', versionUtility.calculateNextQAVersion('junk.1.1.1-SIGQA34-SNAPSHOT'))
+        assertEquals('junk.1.1.1-SIGQA34', versionUtility.calculateNextQAVersion('junk.1.1.1-SIGQA34-SNAPSHOT'))
 
         assertEquals('real_junk+stuff.1.1.1-SIGQA1', versionUtility.calculateNextQAVersion('real_junk+stuff.1.1.1-SNAPSHOT'))
-        assertEquals('real_junk+stuff.1.1.1-SIGQA35', versionUtility.calculateNextQAVersion('real_junk+stuff.1.1.1-SIGQA34-SNAPSHOT'))
+        assertEquals('real_junk+stuff.1.1.1-SIGQA34', versionUtility.calculateNextQAVersion('real_junk+stuff.1.1.1-SIGQA34-SNAPSHOT'))
         assertEquals('real_junk+stuff.1.1.1-SIGQA1', versionUtility.calculateNextQAVersion('real_junk+stuff.1.1.1'))
         assertEquals('real_junk+stuff.1.1.1-SIGQA35', versionUtility.calculateNextQAVersion('real_junk+stuff.1.1.1-SIGQA34'))
     }
@@ -123,5 +123,23 @@ class VersionUtilityTest {
         assertEquals('real_junk+stuff.1.1.1-SIGQA34-SNAPSHOT', versionUtility.calculateNextSnapshot('real_junk+stuff.1.1.1-SIGQA34-SNAPSHOT'))
         assertEquals('real_junk+stuff.1.1.2-SNAPSHOT', versionUtility.calculateNextSnapshot('real_junk+stuff.1.1.1'))
         assertEquals('real_junk+stuff.1.1.1-SIGQA35-SNAPSHOT', versionUtility.calculateNextSnapshot('real_junk+stuff.1.1.1-SIGQA34'))
+    }
+
+    @Test
+    void expectedVersionFlowTest() {
+        VersionUtility versionUtility = new VersionUtility()
+        String version = '4.7.3-SNAPSHOT'
+        version = versionUtility.calculateNextQAVersion(version)
+        assertEquals('4.7.3-SIGQA1', version)
+        version = versionUtility.calculateNextSnapshot(version)
+        assertEquals('4.7.3-SIGQA2-SNAPSHOT', version)
+        version = versionUtility.calculateNextQAVersion(version)
+        assertEquals('4.7.3-SIGQA2', version)
+        version = versionUtility.calculateNextSnapshot(version)
+        assertEquals('4.7.3-SIGQA3-SNAPSHOT', version)
+        version = versionUtility.calculateReleaseVersion(version)
+        assertEquals('4.7.3', version)
+        version = versionUtility.calculateNextSnapshot(version)
+        assertEquals('4.7.4-SNAPSHOT', version)
     }
 }
