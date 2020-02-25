@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class VersionUtility {
+public class VersionUtility {
     public static String SUFFIX_SNAPSHOT = '-SNAPSHOT'
     public static String SUFFIX_SIGQA = '-SIGQA'
     public static String VERSION_PATTERN = '(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)'

@@ -37,7 +37,7 @@ import java.time.Duration
  * This plugin is intended for common libraries. They will be published to
  * maven central and artifactory, using the version (SNAPSHOT or release) to
  * determine the appropriate destination for each.*/
-class LibraryPlugin extends SimplePlugin {
+public class LibraryPlugin extends SimplePlugin {
     void apply(Project project) {
         super.apply(project)
 

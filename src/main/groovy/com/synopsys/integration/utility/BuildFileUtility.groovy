@@ -22,7 +22,7 @@
  */
 package com.synopsys.integration.utility
 
-class BuildFileUtility {
+public class BuildFileUtility {
     public void updateVersion(File buildFile, String currentVersion, String newVersion) {
         String buildFileContents = buildFile.text
         String newBuildFileContents = updateVersion(buildFileContents, currentVersion, newVersion)

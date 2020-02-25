@@ -26,7 +26,7 @@ import org.gradle.api.Project
 
 /**
  * This plugin is intended for simple java/groovy projects that do not need publishing.*/
-class SimplePlugin extends Common {
+public class SimplePlugin extends Common {
     void apply(Project project) {
         project.plugins.apply("java-library")
 
