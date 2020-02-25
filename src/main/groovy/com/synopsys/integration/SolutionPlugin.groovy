@@ -1,3 +1,5 @@
+package com.synopsys.integration
+
 /*
  * common-gradle-plugin
  *
@@ -23,22 +25,26 @@
 import org.gradle.api.Project
 
 /**
- * This plugin is intended for simple java/groovy projects that do not need publishing.*/
-class SimplePlugin extends Common {
+ * This plugin is meant for final integration solutions. They can create the
+ * 'mavenJava' publication for uploading to artifactory, overloading the
+ * 'artifactoryRepo' property to affect the destination repository.*/
+class SolutionPlugin extends Common {
     void apply(Project project) {
-        project.plugins.apply("java-library")
+        project.plugins.apply('java')
 
         super.apply(project)
 
-        if (Boolean.valueOf(project.ext[Common.PROPERTY_JAVA_USE_AUTO_MODULE_NAME]) && project.ext.moduleName) {
-            def moduleName = project.ext.moduleName
-            project.tasks.getByName('jar') {
-                inputs.property("moduleName", moduleName)
-                manifest {
-                    attributes('Automatic-Module-Name': moduleName)
-                }
-            }
-        }
+        project.tasks.create('deploySolution', {
+            dependsOn 'artifactoryPublish'
+            project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
+        })
+
+        configureForArtifactoryUpload(project)
+    }
+
+    private void configureForArtifactoryUpload(Project project) {
+        String artifactoryRepo = project.ext.artifactoryRepo
+        configureDefaultsForArtifactory(project, artifactoryRepo)
     }
 
 }

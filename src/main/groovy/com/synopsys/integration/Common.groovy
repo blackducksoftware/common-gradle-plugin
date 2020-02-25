@@ -1,3 +1,5 @@
+package com.synopsys.integration
+
 /*
  * common-gradle-plugin
  *
