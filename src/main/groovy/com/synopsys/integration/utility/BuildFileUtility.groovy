@@ -46,5 +46,4 @@ public class BuildFileUtility {
         return "version = '${version}'"
     }
 
-
 }

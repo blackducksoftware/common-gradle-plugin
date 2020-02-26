@@ -73,7 +73,7 @@ public class LibraryPlugin extends SimplePlugin {
         }
         nexusStagingExtension.username = sonatypeUsername
         nexusStagingExtension.password = sonatypePassword
-        nexusStagingExtension.numberOfRetries = 50
+        nexusStagingExtension.numberOfRetries = 250
 
         NexusPublishExtension nexusPublishExtension = project.extensions.getByName('nexusPublishing')
         // The repositories configured determine the tasks that are created. See NexusPublishPlugin.kt
