@@ -101,6 +101,7 @@ nexusStaging {
     username = sonatypeUsername
     password = sonatypePassword
     numberOfRetries = 250
+    delayBetweenRetriesInMillis = 5000
 }
 
 nexusPublishing {
