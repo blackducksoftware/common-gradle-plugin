@@ -40,12 +40,15 @@ import org.kt3k.gradle.plugin.CoverallsPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
+import java.nio.charset.StandardCharsets
+
 public abstract class Common implements Plugin<Project> {
     public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
+    public static final String BUILDSCRIPT_DEPENDENCY_LOCATION = 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle'
 
     public static final String PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final String PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
@@ -62,6 +65,8 @@ public abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
+    public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
+
 
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -108,6 +113,8 @@ public abstract class Common implements Plugin<Project> {
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_USERNAME, ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_PASSWORD, ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONAR_QUBE_LOGIN, ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN)
+
+        setExtPropertyOnProjectNoDefaults(project, PROPERTY_BUILDSCRIPT_DEPENDENCY, BUILDSCRIPT_DEPENDENCY_LOCATION)
 
         project.repositories {
             mavenLocal()
@@ -210,16 +217,31 @@ public abstract class Common implements Plugin<Project> {
     public void configureForReleases(Project project) {
         VersionUtility versionUtility = new VersionUtility()
         BuildFileUtility buildFileUtility = new BuildFileUtility()
+        File buildFile = project.getBuildFile()
+
+        String buildscriptDependencyLocation = project.ext.buildscriptDependency
 
         project.tasks.create('jaloja') {
             doLast {
-                String currentVersion = project.version
-                println "Updating current version ${currentVersion} to a release version"
-                String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
-                println "New release version ${newVersion}"
-                project.version = newVersion
-                buildFileUtility.updateVersion(project.getBuildFile(), currentVersion, newVersion)
-                println "Ja'loja!!!!!"
+                try {
+                    URL url = new URL(buildscriptDependencyLocation)
+                    String remoteContent = url.getText(StandardCharsets.UTF_8.name())
+
+                    String currentContent = "apply from: '${buildscriptDependencyLocation}', to: buildscript"
+                    println "Updating ${currentContent} to ${remoteContent}"
+                    buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, buildscriptDependencyLocation, remoteContent)
+
+                    String currentVersion = project.version
+                    println "Updating current version ${currentVersion} to a release version"
+                    String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
+                    println "New release version ${newVersion}"
+                    project.version = newVersion
+                    buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
+                    println "Ja'loja!!!!!"
+                } catch (Exception e) {
+                    println "Could not get the content for the build script dependencies. ${e.getMessage()}"
+                    e.printStackTrace()
+                }
             }
         }
 
@@ -230,19 +252,23 @@ public abstract class Common implements Plugin<Project> {
                 String newVersion = versionUtility.calculateNextQAVersion(currentVersion)
                 println "New qa version ${newVersion}"
                 project.version = newVersion
-                buildFileUtility.updateVersion(project.getBuildFile(), currentVersion, newVersion)
+                buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
                 println "Ja'loja!!!!!"
             }
         }
 
         project.tasks.create('snapshotJaloja') {
             doLast {
+                String newContent = "apply from: '${buildscriptDependencyLocation}', to: buildscript"
+                println "Updating build script dependencies to ${newContent}"
+                buildFileUtility.updateBuildScriptDependenciesToApplyFromRemote(buildFile, newContent)
+
                 String currentVersion = project.version
                 println "Updating current version ${currentVersion} to a snapshot version"
                 String newVersion = versionUtility.calculateNextSnapshot(currentVersion)
                 println "New snapshot version ${newVersion}"
                 project.version = newVersion
-                buildFileUtility.updateVersion(project.getBuildFile(), currentVersion, newVersion)
+                buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
                 println "Ja'loja!!!!!"
             }
         }

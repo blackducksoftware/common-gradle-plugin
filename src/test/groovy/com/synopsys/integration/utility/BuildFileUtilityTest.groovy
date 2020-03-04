@@ -211,4 +211,172 @@ class BuildFileUtilityTest {
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
 
+    @Test
+    void updateBuildScriptDependenciesToApplyFromRemoteTest() {
+        String buildFileContent = """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        ////////// START BUILDSCRIPT DEPENDENCY //////////
+                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.3.2-SNAPSHOT" }
+                        
+                        ////////// END BUILDSCRIPT DEPENDENCY //////////
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String buildFileContentExpected = """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String newContent = "apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript"
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateBuildScriptDependenciesToApplyFromRemote(buildFileContent, newContent)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
+    void updateBuildScriptDependenciesToApplyFromRemoteFileTest() {
+        File buildFile = File.createTempFile('test_build', '.gradle', new File('build'))
+        buildFile.deleteOnExit()
+        buildFile << """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        ////////// START BUILDSCRIPT DEPENDENCY //////////
+                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.3.2-SNAPSHOT" }
+                        
+                        ////////// END BUILDSCRIPT DEPENDENCY //////////
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String buildFileContentExpected = """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String newContent = "apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript"
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        buildFileUtility.updateBuildScriptDependenciesToApplyFromRemote(buildFile, newContent)
+        String newBuildFileContent = buildFile.text
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+
+    @Test
+    void updateBuildScriptDependenciesToRemoteContentTest() {
+        String buildFileContent = """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", to: buildscript
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String buildFileContentExpected = """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        ////////// START BUILDSCRIPT DEPENDENCY //////////
+test content
+////////// END BUILDSCRIPT DEPENDENCY //////////
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String newContent = "test content"
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFileContent, "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", newContent)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
+    void updateBuildScriptDependenciesToRemoteContentFileTest() {
+        File buildFile = File.createTempFile('test_build', '.gradle', new File('build'))
+        buildFile.deleteOnExit()
+        buildFile << """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", to: buildscript
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String buildFileContentExpected = """
+                    buildscript {
+                        apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
+                        ////////// START BUILDSCRIPT DEPENDENCY //////////
+test content
+////////// END BUILDSCRIPT DEPENDENCY //////////
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String newContent = "test content"
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", newContent)
+        String newBuildFileContent = buildFile.text
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
 }
