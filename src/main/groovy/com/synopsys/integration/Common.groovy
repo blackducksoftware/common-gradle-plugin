@@ -1,5 +1,8 @@
 package com.synopsys.integration
 
+import com.hierynomus.gradle.license.LicenseBasePlugin
+import com.synopsys.integration.utility.BuildFileUtility
+
 /*
  * common-gradle-plugin
  *
@@ -22,13 +25,13 @@ package com.synopsys.integration
  * specific language governing permissions and limitations
  * under the License.
  */
-import com.hierynomus.gradle.license.LicenseBasePlugin
-import com.synopsys.integration.utility.BuildFileUtility
+
 import com.synopsys.integration.utility.VersionUtility
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.*
 import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
@@ -240,7 +243,7 @@ public abstract class Common implements Plugin<Project> {
                     println "Ja'loja!!!!!"
                 } catch (Exception e) {
                     println "Could not get the content for the build script dependencies. ${e.getMessage()}"
-                    e.printStackTrace()
+                    throw new TaskExecutionException(it, e)
                 }
             }
         }
