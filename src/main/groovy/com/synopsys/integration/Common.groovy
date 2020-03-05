@@ -2,6 +2,8 @@ package com.synopsys.integration
 
 import com.hierynomus.gradle.license.LicenseBasePlugin
 import com.synopsys.integration.utility.BuildFileUtility
+import com.synopsys.integration.utility.VersionUtility
+import nl.javadude.gradle.plugins.license.LicenseExtension
 
 /*
  * common-gradle-plugin
@@ -26,8 +28,6 @@ import com.synopsys.integration.utility.BuildFileUtility
  * under the License.
  */
 
-import com.synopsys.integration.utility.VersionUtility
-import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.*
 import org.gradle.api.plugins.JavaPluginConvention
@@ -68,7 +68,7 @@ public abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
-    public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
+    public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependencyURL'
 
 
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
@@ -232,7 +232,7 @@ public abstract class Common implements Plugin<Project> {
 
                     String currentContent = "apply from: '${buildscriptDependencyLocation}', to: buildscript"
                     println "Updating ${currentContent} to ${remoteContent}"
-                    buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, buildscriptDependencyLocation, remoteContent)
+                    buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, remoteContent)
 
                     String currentVersion = project.version
                     println "Updating current version ${currentVersion} to a release version"

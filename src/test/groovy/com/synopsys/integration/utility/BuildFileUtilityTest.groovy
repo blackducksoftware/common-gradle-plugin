@@ -332,7 +332,7 @@ test content
         String newContent = "test content"
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        String newBuildFileContent = buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFileContent, "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", newContent)
+        String newBuildFileContent = buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFileContent, newContent)
 
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }
@@ -374,7 +374,7 @@ test content
         String newContent = "test content"
 
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", newContent)
+        buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, newContent)
         String newBuildFileContent = buildFile.text
         assertEquals(buildFileContentExpected, newBuildFileContent)
     }

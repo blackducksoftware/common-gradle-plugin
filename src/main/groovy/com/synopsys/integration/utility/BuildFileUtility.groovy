@@ -41,15 +41,15 @@ public class BuildFileUtility {
         return newContents
     }
 
-    public void updateBuildScriptDependenciesToRemoteContent(File buildFile, String buildscriptDependencyLocation, String remoteContent) {
+    public void updateBuildScriptDependenciesToRemoteContent(File buildFile, String remoteContent) {
         String buildFileContents = buildFile.text
-        String newBuildFileContents = updateBuildScriptDependenciesToRemoteContent(buildFileContents, buildscriptDependencyLocation, remoteContent)
+        String newBuildFileContents = updateBuildScriptDependenciesToRemoteContent(buildFileContents, remoteContent)
 
         buildFile.text = newBuildFileContents
     }
 
-    public String updateBuildScriptDependenciesToRemoteContent(String buildFileContents, String buildscriptDependencyLocation, String remoteContent) {
-        String currentContent = getBuildScriptDependencyLinePattern(buildscriptDependencyLocation)
+    public String updateBuildScriptDependenciesToRemoteContent(String buildFileContents, String remoteContent) {
+        String currentContent = getBuildScriptDependencyLinePattern()
 
         String newReplacement = START_BUILDSCRIPT_DEPENDENCY + '\n' + remoteContent + '\n' + END_BUILDSCRIPT_DEPENDENCY
 
@@ -75,8 +75,8 @@ public class BuildFileUtility {
         return "${START_BUILDSCRIPT_DEPENDENCY}(.*\\n.*)+${END_BUILDSCRIPT_DEPENDENCY}"
     }
 
-    public String getBuildScriptDependencyLinePattern(String buildscriptDependencyLocation) {
-        return "apply\\sfrom:\\s[\"\']?${buildscriptDependencyLocation}[\"\']?,\\sto:\\sbuildscript"
+    public String getBuildScriptDependencyLinePattern() {
+        return "apply\\sfrom:\\s[\"\']?.*buildscript-dependencies.gradle[\"\']?,\\sto:\\sbuildscript"
     }
 
     public String getVersionLinePattern(String currentVersion) {
