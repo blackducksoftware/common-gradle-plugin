@@ -1,13 +1,10 @@
 package com.synopsys.integration.utility
 
-import com.synopsys.integration.utility.VersionUtility
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 
-
 class VersionUtilityTest {
-
     @Test
     void calculateReleaseVersionTest() {
         VersionUtility versionUtility = new VersionUtility()
@@ -142,4 +139,5 @@ class VersionUtilityTest {
         version = versionUtility.calculateNextSnapshot(version)
         assertEquals('4.7.4-SNAPSHOT', version)
     }
+
 }
