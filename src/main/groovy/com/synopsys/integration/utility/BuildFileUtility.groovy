@@ -23,6 +23,9 @@
 package com.synopsys.integration.utility
 
 public class BuildFileUtility {
+    public static final String START_BUILDSCRIPT_DEPENDENCY = "////////// START BUILDSCRIPT DEPENDENCY //////////"
+    public static final String END_BUILDSCRIPT_DEPENDENCY = "////////// END BUILDSCRIPT DEPENDENCY //////////"
+
     public void updateVersion(File buildFile, String currentVersion, String newVersion) {
         String buildFileContents = buildFile.text
         String newBuildFileContents = updateVersion(buildFileContents, currentVersion, newVersion)
@@ -36,6 +39,44 @@ public class BuildFileUtility {
 
         String newContents = buildFileContents.replaceAll(versionLinePattern, newVersionLine)
         return newContents
+    }
+
+    public void updateBuildScriptDependenciesToRemoteContent(File buildFile, String remoteContent) {
+        String buildFileContents = buildFile.text
+        String newBuildFileContents = updateBuildScriptDependenciesToRemoteContent(buildFileContents, remoteContent)
+
+        buildFile.text = newBuildFileContents
+    }
+
+    public String updateBuildScriptDependenciesToRemoteContent(String buildFileContents, String remoteContent) {
+        String currentContent = getBuildScriptDependencyLinePattern()
+
+        String newReplacement = START_BUILDSCRIPT_DEPENDENCY + '\n' + remoteContent + '\n' + END_BUILDSCRIPT_DEPENDENCY
+
+        String newContents = buildFileContents.replaceAll(currentContent, newReplacement)
+        return newContents
+    }
+
+    public void updateBuildScriptDependenciesToApplyFromRemote(File buildFile, String replacement) {
+        String buildFileContents = buildFile.text
+        String newBuildFileContents = updateBuildScriptDependenciesToApplyFromRemote(buildFileContents, replacement)
+
+        buildFile.text = newBuildFileContents
+    }
+
+    public String updateBuildScriptDependenciesToApplyFromRemote(String buildFileContents, String replacement) {
+        String currentContentPattern = getBuildScriptDependencyContentPattern()
+
+        String newContents = buildFileContents.replaceAll(currentContentPattern, replacement)
+        return newContents
+    }
+
+    public String getBuildScriptDependencyContentPattern() {
+        return "${START_BUILDSCRIPT_DEPENDENCY}(.*\\n.*)+${END_BUILDSCRIPT_DEPENDENCY}"
+    }
+
+    public String getBuildScriptDependencyLinePattern() {
+        return "apply\\sfrom:\\s[\"\']?.*buildscript-dependencies.gradle[\"\']?,\\sto:\\sbuildscript"
     }
 
     public String getVersionLinePattern(String currentVersion) {
