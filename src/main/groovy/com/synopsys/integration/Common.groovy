@@ -89,6 +89,7 @@ public abstract class Common implements Plugin<Project> {
         }
 
         project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
+        project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY] = BUILDSCRIPT_DEPENDENCY_LOCATION
 
         // assume some reasonable defaults if the environment doesn't provide specific values
         setExtPropertyOnProject(project, PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
@@ -115,8 +116,6 @@ public abstract class Common implements Plugin<Project> {
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_USERNAME, ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_PASSWORD, ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONAR_QUBE_LOGIN, ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN)
-
-        setExtPropertyOnProjectNoDefaults(project, PROPERTY_BUILDSCRIPT_DEPENDENCY, BUILDSCRIPT_DEPENDENCY_LOCATION)
 
         project.repositories {
             mavenLocal()
