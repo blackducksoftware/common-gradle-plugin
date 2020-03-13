@@ -68,8 +68,7 @@ public abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
-    public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependencyURL'
-
+    public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
 
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -121,7 +120,7 @@ public abstract class Common implements Plugin<Project> {
 
         project.repositories {
             mavenLocal()
-            maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}" }
+            maven { url "${project.ext[PROPERTY_DOWNLOAD_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_RELEASE_REPO]}" }
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
@@ -163,8 +162,8 @@ public abstract class Common implements Plugin<Project> {
         Task javadocTask = project.tasks.getByName('javadoc')
         JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
-        javaPluginConvention.sourceCompatibility = project.ext.javaSourceCompatibility
-        javaPluginConvention.targetCompatibility = project.ext.javaTargetCompatibility
+        javaPluginConvention.sourceCompatibility = project.ext[PROPERTY_JAVA_SOURCE_COMPATIBILITY]
+        javaPluginConvention.targetCompatibility = project.ext[PROPERTY_JAVA_TARGET_COMPATIBILITY]
 
         Task sourcesJarTask = project.tasks.findByName('sourcesJar')
         if (sourcesJarTask == null) {
@@ -222,7 +221,7 @@ public abstract class Common implements Plugin<Project> {
         BuildFileUtility buildFileUtility = new BuildFileUtility()
         File buildFile = project.getBuildFile()
 
-        String buildscriptDependencyLocation = project.ext.buildscriptDependency
+        String buildscriptDependencyLocation = project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY]
 
         project.tasks.create('jaloja') {
             doLast {
@@ -277,13 +276,12 @@ public abstract class Common implements Plugin<Project> {
         }
     }
 
-
     public void configureForSonarQube(Project project) {
         SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube')
         sonarQubeExtension.properties {
             property 'sonar.host.url', 'https://sonarcloud.io'
             property 'sonar.organization', 'black-duck-software'
-            property 'sonar.login', project.ext.sonarQubeLogin
+            property 'sonar.login', project.ext[PROPERTY_SONAR_QUBE_LOGIN]
         }
     }
 
@@ -297,11 +295,11 @@ public abstract class Common implements Plugin<Project> {
         }
 
         def allTestTags = ''
-        if (project.ext.junitPlatformDefaultTestTags) {
-            allTestTags += project.ext.junitPlatformDefaultTestTags
+        if (project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS]) {
+            allTestTags += project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS]
         }
-        if (project.ext.junitPlatformCustomTestTags) {
-            allTestTags += ',' + project.ext.junitPlatformCustomTestTags
+        if (project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS]) {
+            allTestTags += ',' + project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS]
         }
         def testTags = allTestTags.split("\\s*,\\s*")
 
@@ -311,7 +309,7 @@ public abstract class Common implements Plugin<Project> {
                 excludeTags testTags
             }
             description += " NOTE: This excludes those tests with ${descriptionSuffix})."
-            testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
         }
 
         testTags.each { testTag ->
@@ -319,7 +317,7 @@ public abstract class Common implements Plugin<Project> {
                 useJUnitPlatform { includeTags testTag }
                 group = 'verification'
                 description = "Runs all the tests with @Tag(\"${testTag}\")."
-                testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
+                testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
             }
         }
 
@@ -327,7 +325,7 @@ public abstract class Common implements Plugin<Project> {
             useJUnitPlatform()
             group = 'verification'
             description = "Runs all the tests (ignores tags)."
-            testLogging.showStandardStreams = Boolean.valueOf(project.ext.junitShowStandardStreams)
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
         }
     }
 
@@ -337,11 +335,11 @@ public abstract class Common implements Plugin<Project> {
 
     public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
-        artifactoryPluginConvention.contextUrl = project.ext.deployArtifactoryUrl
+        artifactoryPluginConvention.contextUrl = project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]
         artifactoryPluginConvention.publish {
             repository { repoKey = artifactoryRepo }
-            username = project.ext.artifactoryDeployerUsername
-            password = project.ext.artifactoryDeployerPassword
+            username = project.ext[PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME]
+            password = project.ext[PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD]
         }
 
         if (defaultsClosure != null) {
@@ -349,7 +347,7 @@ public abstract class Common implements Plugin<Project> {
         }
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
-            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext.deployArtifactoryUrl}/${project.ext.artifactoryRepo}"
+            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_REPO]}"
         }
     }
 
@@ -394,8 +392,7 @@ public abstract class Common implements Plugin<Project> {
     void installFile(String downloadUrl, File projectFile) {
         def downloadedFile = new URL(downloadUrl)
 
-        projectFile.withOutputStream { out -> downloadedFile.withInputStream { from -> out << from }
-        }
+        projectFile.withOutputStream { out -> downloadedFile.withInputStream { from -> out << from } }
     }
 
 }

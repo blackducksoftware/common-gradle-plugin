@@ -43,7 +43,7 @@ public class SolutionPlugin extends Common {
     }
 
     private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.ext.artifactoryRepo
+        String artifactoryRepo = project.ext[PROPERTY_ARTIFACTORY_REPO]
         configureDefaultsForArtifactory(project, artifactoryRepo)
     }
 
