@@ -63,8 +63,8 @@ public class LibraryPlugin extends SimplePlugin {
     }
 
     private void configureForMavenCentralUpload(Project project) {
-        String sonatypeUsername = project.ext.sonatypeUsername
-        String sonatypePassword = project.ext.sonatypePassword
+        String sonatypeUsername = project.ext[PROPERTY_SONATYPE_USERNAME]
+        String sonatypePassword = project.ext[PROPERTY_SONATYPE_PASSWORD]
         NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
 
         if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
@@ -142,9 +142,9 @@ public class LibraryPlugin extends SimplePlugin {
     }
 
     private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.ext.artifactorySnapshotRepo
+        String artifactoryRepo = project.ext[PROPERTY_ARTIFACTORY_SNAPSHOT_REPO]
         if (!project.isSnapshot) {
-            artifactoryRepo = project.ext.artifactoryReleaseRepo
+            artifactoryRepo = project.ext[PROPERTY_ARTIFACTORY_RELEASE_REPO]
         }
 
         configureDefaultsForArtifactory(project, artifactoryRepo, { publications('mavenJava') })

@@ -32,7 +32,7 @@ public class SimplePlugin extends Common {
 
         super.apply(project)
 
-        if (Boolean.valueOf(project.ext[Common.PROPERTY_JAVA_USE_AUTO_MODULE_NAME]) && project.ext.moduleName) {
+        if (Boolean.valueOf(project.ext[PROPERTY_JAVA_USE_AUTO_MODULE_NAME]) && project.ext.moduleName) {
             def moduleName = project.ext.moduleName
             project.tasks.getByName('jar') {
                 inputs.property("moduleName", moduleName)
