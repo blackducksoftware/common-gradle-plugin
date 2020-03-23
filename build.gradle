@@ -86,8 +86,8 @@ task javadocJar(type: Jar) {
 }
 
 sonarqube {
-    url = 'https://sonarcloud.io'
-    organization = 'black-duck-software'
+    properties['sonar.host.url'] = 'https://sonarcloud.io'
+    properties['sonar.organization'] = 'black-duck-software'
 }
 
 license {
