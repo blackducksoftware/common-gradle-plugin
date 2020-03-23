@@ -80,9 +80,6 @@ public abstract class Common implements Plugin<Project> {
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_USERNAME = 'SONATYPE_USERNAME'
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD = 'SONATYPE_PASSWORD'
 
-    public static final String PROPERTY_SONAR_QUBE_LOGIN = 'sonarQubeLogin'
-    public static final String ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN = 'SONAR_QUBE_LOGIN'
-
     void apply(Project project) {
         if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
             throw new GradleException('The version must be specified before applying this plugin.')
@@ -115,7 +112,6 @@ public abstract class Common implements Plugin<Project> {
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_USERNAME, ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
         setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_PASSWORD, ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
-        setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONAR_QUBE_LOGIN, ENVIRONMENT_VARIABLE_SONAR_QUBE_LOGIN)
 
         project.repositories {
             mavenLocal()
@@ -280,7 +276,6 @@ public abstract class Common implements Plugin<Project> {
         sonarQubeExtension.properties {
             property 'sonar.host.url', 'https://sonarcloud.io'
             property 'sonar.organization', 'black-duck-software'
-            property 'sonar.login', project.ext[PROPERTY_SONAR_QUBE_LOGIN]
         }
     }
 

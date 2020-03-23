@@ -61,7 +61,7 @@ dependencies {
     //https://github.com/marcphilipp/nexus-publish-plugin
     implementation "de.marcphilipp.nexus-publish:de.marcphilipp.nexus-publish.gradle.plugin:${NEXUS_PUBLISH_VERSION}"
 
-    //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
+    //https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
     //https://plugins.gradle.org/plugin/org.sonarqube
     implementation "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${SONARQUBE_VERSION}"
 
@@ -83,6 +83,11 @@ task sourcesJar(type: Jar) {
 task javadocJar(type: Jar) {
     from javadoc
     archiveClassifier = 'javadoc'
+}
+
+sonarqube {
+    properties['sonar.host.url'] = 'https://sonarcloud.io'
+    properties['sonar.organization'] = 'black-duck-software'
 }
 
 license {
