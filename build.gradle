@@ -85,11 +85,6 @@ task javadocJar(type: Jar) {
     archiveClassifier = 'javadoc'
 }
 
-sonarqube {
-    properties['sonar.host.url'] = 'https://sonarcloud.io'
-    properties['sonar.organization'] = 'black-duck-software'
-}
-
 license {
     headerURI = new java.net.URI('https://blackducksoftware.github.io/integration-resources/project/HEADER.txt')
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
