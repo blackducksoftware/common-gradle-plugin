@@ -16,10 +16,12 @@ plugins {
     id 'jacoco'
     id 'signing'
     id 'eclipse'
-    id 'com.jfrog.artifactory' version '4.10.0'
-    id 'com.github.hierynomus.license' version '0.14.0'
-    id 'io.codearte.nexus-staging' version '0.21.1'
-    id 'de.marcphilipp.nexus-publish' version '0.4.0'
+    id 'com.github.kt3k.coveralls' version "${COVERALLS_VERSION}"
+    id 'org.sonarqube' version "${SONARQUBE_VERSION}"
+    id 'com.jfrog.artifactory' version "${ARTIFACTORY_VERSION}"
+    id 'com.github.hierynomus.license' version "${LICENSE_VERSION}"
+    id 'io.codearte.nexus-staging' version "${NEXUS_STAGING_VERSION}"
+    id 'de.marcphilipp.nexus-publish' version "${NEXUS_PUBLISH_VERSION}"
 }
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
@@ -45,23 +47,23 @@ dependencies {
 
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
-    implementation 'org.jfrog.buildinfo:build-info-extractor-gradle:4.10.0'
+    implementation "org.jfrog.buildinfo:build-info-extractor-gradle:${ARTIFACTORY_VERSION}"
 
     //https://github.com/hierynomus/license-gradle-plugin
-    implementation 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
+    implementation "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${LICENSE_VERSION}"
 
     //https://github.com/kt3k/coveralls-gradle-plugin
-    implementation 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+    implementation "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${COVERALLS_VERSION}"
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
-    implementation 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.1'
+    implementation "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:${NEXUS_STAGING_VERSION}"
 
     //https://github.com/marcphilipp/nexus-publish-plugin
-    implementation 'de.marcphilipp.nexus-publish:de.marcphilipp.nexus-publish.gradle.plugin:0.4.0'
+    implementation "de.marcphilipp.nexus-publish:de.marcphilipp.nexus-publish.gradle.plugin:${NEXUS_PUBLISH_VERSION}"
 
     //https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     //https://plugins.gradle.org/plugin/org.sonarqube
-    implementation 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7.0.1622'
+    implementation "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${SONARQUBE_VERSION}"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
