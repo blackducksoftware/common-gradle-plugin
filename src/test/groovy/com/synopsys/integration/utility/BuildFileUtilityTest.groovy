@@ -252,6 +252,54 @@ class BuildFileUtilityTest {
     }
 
     @Test
+    void updateBuildScriptDependenciesToApplyFromRemoteShouldNotChangeAnythingTest() {
+        String buildFileContent = """
+                    buildscript {
+                        repositories {
+                            mavenLocal()
+                            jcenter()
+                            mavenCentral()
+                            maven { url 'https://plugins.gradle.org/m2/' }
+                        }
+                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String buildFileContentExpected = """
+                    buildscript {
+                        repositories {
+                            mavenLocal()
+                            jcenter()
+                            mavenCentral()
+                            maven { url 'https://plugins.gradle.org/m2/' }
+                        }
+                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                    }
+
+                    group 'com.synopsys.integration'
+                    version = '1.0.1-SNAPSHOT'
+                    apply plugin: 'com.synopsys.integration.library'
+                    dependencies {
+                        implementation "log4j:log4j:1.0.1-SNAPSHOT"
+                        testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
+                    }
+                """
+        String newContent = "apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript"
+
+        BuildFileUtility buildFileUtility = new BuildFileUtility()
+        String newBuildFileContent = buildFileUtility.updateBuildScriptDependenciesToApplyFromRemote(buildFileContent, newContent)
+
+        assertEquals(buildFileContentExpected, newBuildFileContent)
+    }
+
+    @Test
     void updateBuildScriptDependenciesToApplyFromRemoteFileTest() {
         File buildFile = File.createTempFile('test_build', '.gradle', new File('build'))
         buildFile.deleteOnExit()
