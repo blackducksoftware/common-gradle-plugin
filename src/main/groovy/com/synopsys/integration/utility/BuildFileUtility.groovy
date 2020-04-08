@@ -65,10 +65,13 @@ public class BuildFileUtility {
     }
 
     public String updateBuildScriptDependenciesToApplyFromRemote(String buildFileContents, String replacement) {
-        int startIndex = buildFileContents.indexOf(START_BUILDSCRIPT_DEPENDENCY) - 1
-        int endIndex = buildFileContents.indexOf(END_BUILDSCRIPT_DEPENDENCY) + END_BUILDSCRIPT_DEPENDENCY.length()
+        String newContents = buildFileContents
+        if (buildFileContents.contains(START_BUILDSCRIPT_DEPENDENCY) && buildFileContents.contains(END_BUILDSCRIPT_DEPENDENCY)) {
+            int startIndex = buildFileContents.indexOf(START_BUILDSCRIPT_DEPENDENCY) - 1
+            int endIndex = buildFileContents.indexOf(END_BUILDSCRIPT_DEPENDENCY) + END_BUILDSCRIPT_DEPENDENCY.length()
 
-        String newContents = buildFileContents[0..startIndex] + replacement + buildFileContents[endIndex..-1]
+            newContents = buildFileContents[0..startIndex] + replacement + buildFileContents[endIndex..-1]
+        }
         return newContents
     }
 
