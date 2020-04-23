@@ -267,27 +267,39 @@ public abstract class Common implements Plugin<Project> {
 
     public void configureForJacoco(Project project) {
         project.plugins.apply('jacoco')
-        project.tasks.getByName('jacocoTestReport').reports {
+        Task jacocoTask = project.tasks.getByName('jacocoTestReport')
+        jacocoTask.reports {
             // coveralls plugin demands xml format
             xml.enabled = true
             html.enabled = true
         }
-        project.tasks.getByName('jacocoTestReport').executionData(project.files(new File("${project.buildDir}/jacoco").listFiles()))
+
+        File jacocoDirectory = new File("${project.buildDir}/jacoco")
+        if (jacocoDirectory && jacocoDirectory.exists()) {
+            project.tasks.getByName('jacocoTestReport').executionData(project.files(jacocoDirectory.listFiles()))
+        }
     }
 
     public void configureForSonarQube(Project project) {
-        def allSurefireReportDirectories = project.files(new File("${project.buildDir}/test-results").listFiles())
-        def surefireReportPaths =
-                allSurefireReportDirectories
-                        .getFrom()
-                        .collect { project.relativePath(it) }
-                        .join(',')
+        def surefireReportPaths = ''
+
+        File testResultsDirectory = new File("${project.buildDir}/test-results")
+        if (testResultsDirectory && testResultsDirectory.exists()) {
+            def allSurefireReportDirectories = project.files(testResultsDirectory.listFiles())
+            surefireReportPaths =
+                    allSurefireReportDirectories
+                            .getFrom()
+                            .collect { project.relativePath(it) }
+                            .join(',')
+        }
 
         SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube')
         sonarQubeExtension.properties {
             property 'sonar.host.url', 'https://sonarcloud.io'
             property 'sonar.organization', 'black-duck-software'
-            property 'sonar.junit.reportPaths', surefireReportPaths
+            if (surefireReportPaths) {
+                property 'sonar.junit.reportPaths', surefireReportPaths
+            }
         }
     }
 
