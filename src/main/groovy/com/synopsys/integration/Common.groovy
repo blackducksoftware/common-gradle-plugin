@@ -122,7 +122,6 @@ public abstract class Common implements Plugin<Project> {
 
         project.plugins.apply('eclipse')
         project.plugins.apply('maven-publish')
-        project.plugins.apply('jacoco')
         project.plugins.apply(LicenseBasePlugin.class)
         project.plugins.apply(CoverallsPlugin.class)
         project.plugins.apply(ArtifactoryPlugin.class)
@@ -147,8 +146,9 @@ public abstract class Common implements Plugin<Project> {
         configureForJava(project)
         configureForLicense(project)
         configureForReleases(project)
-        configureForSonarQube(project)
         configureForTesting(project)
+        configureForJacoco(project)
+        configureForSonarQube(project)
     }
 
     public void configureForJava(Project project) {
@@ -180,12 +180,6 @@ public abstract class Common implements Plugin<Project> {
             project.tasks.withType(Javadoc) {
                 options.addStringOption('Xdoclint:none', '-quiet')
             }
-        }
-
-        project.tasks.getByName('jacocoTestReport').reports {
-            // coveralls plugin demands xml format
-            xml.enabled = true
-            html.enabled = true
         }
     }
 
@@ -271,12 +265,29 @@ public abstract class Common implements Plugin<Project> {
         }
     }
 
+    public void configureForJacoco(Project project) {
+        project.plugins.apply('jacoco')
+        project.tasks.getByName('jacocoTestReport').reports {
+            // coveralls plugin demands xml format
+            xml.enabled = true
+            html.enabled = true
+        }
+        project.tasks.getByName('jacocoTestReport').executionData(project.files(new File("${project.buildDir}/jacoco").listFiles()))
+    }
+
     public void configureForSonarQube(Project project) {
+        def allSurefireReportDirectories = project.files(new File("${project.buildDir}/test-results").listFiles())
+        def surefireReportPaths =
+                allSurefireReportDirectories
+                        .getFrom()
+                        .collect { project.relativePath(it) }
+                        .join(',')
+
         SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube')
         sonarQubeExtension.properties {
             property 'sonar.host.url', 'https://sonarcloud.io'
             property 'sonar.organization', 'black-duck-software'
-            property 'sonar.coverage.jacoco.xmlReportPaths', '**/build/test-results/**/*.xml'
+            property 'sonar.junit.reportPaths', surefireReportPaths
         }
     }
 
