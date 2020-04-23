@@ -276,6 +276,7 @@ public abstract class Common implements Plugin<Project> {
         sonarQubeExtension.properties {
             property 'sonar.host.url', 'https://sonarcloud.io'
             property 'sonar.organization', 'black-duck-software'
+            property 'sonar.coverage.jacoco.xmlReportPaths', '**/build/test-results/**/*.xml'
         }
     }
 
