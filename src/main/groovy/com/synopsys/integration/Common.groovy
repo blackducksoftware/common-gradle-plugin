@@ -270,10 +270,7 @@ public abstract class Common implements Plugin<Project> {
     public void configureForJacoco(Project project) {
         project.plugins.apply('jacoco')
 
-        def jacocoReportTaskExcludes = StringUtils.replaceEach(project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE].toString(), ['.java'] as String[], ['.class'] as String[]).split() as ArrayList
-        def jacocoTestTaskExcludes = StringUtils.replaceEach(project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE].toString(), ['.*', '.class', '.java'] as String[], ['', '', ''] as String[]).split() as ArrayList
         Task jacocoReportTask = project.tasks.getByName('jacocoTestReport')
-        Task testTask = project.tasks.getByName('test')
 
         jacocoReportTask.reports {
             // coveralls plugin demands xml format
@@ -285,31 +282,11 @@ public abstract class Common implements Plugin<Project> {
         if (jacocoDirectory && jacocoDirectory.exists()) {
             jacocoReportTask.executionData(project.files(jacocoDirectory.listFiles()))
         }
-
-        // This handles excludes for the jacocoTestReport task which generates
-        // the file: build/reports/jacoco/test/html/index.html
-        if (jacocoReportTaskExcludes.size() > 0) {
-            if (jacocoReportTask.hasProperty('classDirectories')) {
-                println "Adding the following exclusions to your jacocoTestReport task:"
-                jacocoReportTaskExcludes.each { println "\t" + it }
-
-                project.afterEvaluate {
-                    jacocoReportTask.classDirectories.from = project.files(jacocoReportTask.property('classDirectories').collect {
-                        project.fileTree(dir: it, exclude: jacocoReportTaskExcludes)
-                    })
-                }
-            }
-
-            // This handles excludes for the test.jacoco task which generates
-            // the file: build/jacoco/test.exec
-            println "Adding the following exclusions to your test.jacoco task:"
-            jacocoTestTaskExcludes.each { println "\t" + it }
-            testTask.jacoco.setExcludes(jacocoTestTaskExcludes)
-        }
     }
 
     public void configureForSonarQube(Project project) {
-        def sonarExcludes = StringUtils.replaceEach(project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE].toString(), ['.class'] as String[], ['.java'] as String[]).split() as ArrayList
+        def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE].toString().replace(".class", ".java").split(", |,| ") as ArrayList
+
         def surefireReportPaths = ''
 
         File testResultsDirectory = new File("${project.buildDir}/test-results")
@@ -333,7 +310,7 @@ public abstract class Common implements Plugin<Project> {
         }
 
         if (sonarExcludes.size() > 0) {
-            println "Adding the following exclusions to your sonarqube task:"
+            println "Applying the following exclusions to your sonarqube task:"
             println "\t" + sonarExcludes
 
             sonarQubeExtension.properties {
