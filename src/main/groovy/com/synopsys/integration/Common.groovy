@@ -285,7 +285,7 @@ public abstract class Common implements Plugin<Project> {
     }
 
     public void configureForSonarQube(Project project) {
-        def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE].toString().replace(".class", ".java").split(", |,| ") as ArrayList
+        def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
 
         def surefireReportPaths = ''
 
