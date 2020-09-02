@@ -1,10 +1,3 @@
-package com.synopsys.integration
-
-import com.hierynomus.gradle.license.LicenseBasePlugin
-import com.synopsys.integration.utility.BuildFileUtility
-import com.synopsys.integration.utility.VersionUtility
-import nl.javadude.gradle.plugins.license.LicenseExtension
-
 /*
  * common-gradle-plugin
  *
@@ -27,7 +20,12 @@ import nl.javadude.gradle.plugins.license.LicenseExtension
  * specific language governing permissions and limitations
  * under the License.
  */
+package com.synopsys.integration
 
+import com.hierynomus.gradle.license.LicenseBasePlugin
+import com.synopsys.integration.utility.BuildFileUtility
+import com.synopsys.integration.utility.VersionUtility
+import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.*
 import org.gradle.api.plugins.JavaPluginConvention
@@ -69,6 +67,7 @@ public abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
     public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
+    public static final String PROPERTY_EXCLUDES_FROM_TEST_COVERAGE = 'excludesFromTestCoverage'
 
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
@@ -103,6 +102,9 @@ public abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
+
+        // By default we should not exclude anything
+        setExtPropertyOnProject(project, PROPERTY_EXCLUDES_FROM_TEST_COVERAGE, '')
 
         // there is no default public artifactory for deploying
         setExtPropertyOnProject(project, PROPERTY_DEPLOY_ARTIFACTORY_URL, '')
@@ -267,8 +269,10 @@ public abstract class Common implements Plugin<Project> {
 
     public void configureForJacoco(Project project) {
         project.plugins.apply('jacoco')
-        Task jacocoTask = project.tasks.getByName('jacocoTestReport')
-        jacocoTask.reports {
+
+        Task jacocoReportTask = project.tasks.getByName('jacocoTestReport')
+
+        jacocoReportTask.reports {
             // coveralls plugin demands xml format
             xml.enabled = true
             html.enabled = true
@@ -276,29 +280,41 @@ public abstract class Common implements Plugin<Project> {
 
         File jacocoDirectory = new File("${project.buildDir}/jacoco")
         if (jacocoDirectory && jacocoDirectory.exists()) {
-            project.tasks.getByName('jacocoTestReport').executionData(project.files(jacocoDirectory.listFiles()))
+            jacocoReportTask.executionData(project.files(jacocoDirectory.listFiles()))
         }
     }
 
     public void configureForSonarQube(Project project) {
+        def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
+
         def surefireReportPaths = ''
 
         File testResultsDirectory = new File("${project.buildDir}/test-results")
         if (testResultsDirectory && testResultsDirectory.exists()) {
             def allSurefireReportDirectories = project.files(testResultsDirectory.listFiles())
-            surefireReportPaths =
-                    allSurefireReportDirectories
-                            .getFrom()
-                            .collect { project.relativePath(it) }
-                            .join(',')
+            surefireReportPaths = allSurefireReportDirectories
+                    .getFrom()
+                    .collect { project.relativePath(it) }
+                    .join(',')
         }
 
-        SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube')
+        SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube') as SonarQubeExtension
+
         sonarQubeExtension.properties {
             property 'sonar.host.url', 'https://sonarcloud.io'
             property 'sonar.organization', 'black-duck-software'
+
             if (surefireReportPaths) {
                 property 'sonar.junit.reportPaths', surefireReportPaths
+            }
+        }
+
+        if (sonarExcludes.size() > 0) {
+            println "Applying the following exclusions to your sonarqube task:"
+            println "\t" + sonarExcludes
+
+            sonarQubeExtension.properties {
+                property 'sonar.exclusions', sonarExcludes
             }
         }
     }
