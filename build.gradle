@@ -19,7 +19,7 @@ plugins {
     id 'com.github.kt3k.coveralls' version "${COVERALLS_VERSION}"
     id 'org.sonarqube' version "${SONARQUBE_VERSION}"
     id 'com.jfrog.artifactory' version "${ARTIFACTORY_VERSION}"
-    id 'com.github.hierynomus.license' version "${LICENSE_VERSION}"
+    id 'com.github.hierynomus.license-base' version "${LICENSE_VERSION}"
     id 'io.codearte.nexus-staging' version "${NEXUS_STAGING_VERSION}"
     id 'de.marcphilipp.nexus-publish' version "${NEXUS_PUBLISH_VERSION}"
 }
@@ -50,7 +50,7 @@ dependencies {
     implementation "org.jfrog.buildinfo:build-info-extractor-gradle:${ARTIFACTORY_VERSION}"
 
     //https://github.com/hierynomus/license-gradle-plugin
-    implementation "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${LICENSE_VERSION}"
+    implementation "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:${LICENSE_VERSION}"
 
     //https://github.com/kt3k/coveralls-gradle-plugin
     implementation "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${COVERALLS_VERSION}"
