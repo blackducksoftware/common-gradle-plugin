@@ -311,7 +311,6 @@ public abstract class Common implements Plugin<Project> {
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
             testImplementation 'org.junit-pioneer:junit-pioneer:0.3.3'
             testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
-            testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.7.1'
         }
 
         def allTestTags = ''
