@@ -330,22 +330,21 @@ public abstract class Common implements Plugin<Project> {
             testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
         }
 
+        def testAllTask = project.tasks.create('testAll', Test) {
+            group = 'verification'
+            description = "Runs all the tests (ignores tags)."
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
+            dependsOn(project.test)
+        }
+
         testTags.each { testTag ->
-            project.tasks.create('test' + testTag.capitalize(), Test) {
+            def task = project.tasks.create('test' + testTag.capitalize(), Test) {
                 useJUnitPlatform { includeTags testTag }
                 group = 'verification'
                 description = "Runs all the tests with @Tag(\"${testTag}\")."
                 testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
             }
-        }
-
-        project.tasks.create('testAllTags', Test) {
-            useJUnitPlatform {
-                includeTags testTags
-            }
-            group = 'verification'
-            description = "Runs all the tests (ignores tags)."
-            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
+            testAllTask.dependsOn(task)
         }
     }
 
