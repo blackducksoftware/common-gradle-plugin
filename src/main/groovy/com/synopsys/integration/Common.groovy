@@ -307,7 +307,6 @@ public abstract class Common implements Plugin<Project> {
 
     public void configureForTesting(Project project) {
         project.dependencies {
-            testCompileOnly 'junit:junit:4.12'
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
             testImplementation 'org.junit-pioneer:junit-pioneer:0.3.3'
             testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
@@ -331,20 +330,21 @@ public abstract class Common implements Plugin<Project> {
             testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
         }
 
+        def testAllTask = project.tasks.create('testAll', Test) {
+            group = 'verification'
+            description = "Runs all the tests (ignores tags)."
+            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
+            dependsOn(project.test)
+        }
+
         testTags.each { testTag ->
-            project.tasks.create('test' + testTag.capitalize(), Test) {
+            def task = project.tasks.create('test' + testTag.capitalize(), Test) {
                 useJUnitPlatform { includeTags testTag }
                 group = 'verification'
                 description = "Runs all the tests with @Tag(\"${testTag}\")."
                 testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
             }
-        }
-
-        project.tasks.create('testAll', Test) {
-            useJUnitPlatform()
-            group = 'verification'
-            description = "Runs all the tests (ignores tags)."
-            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
+            testAllTask.dependsOn(task)
         }
     }
 
