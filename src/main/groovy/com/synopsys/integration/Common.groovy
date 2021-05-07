@@ -20,15 +20,15 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.api.tasks.testing.Test
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import org.kt3k.gradle.plugin.CoverallsPlugin
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
 import java.nio.charset.StandardCharsets
 
-public abstract class Common implements Plugin<Project> {
+abstract class Common implements Plugin<Project> {
     public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
@@ -110,9 +110,7 @@ public abstract class Common implements Plugin<Project> {
         project.plugins.apply('eclipse')
         project.plugins.apply('maven-publish')
         project.plugins.apply(LicenseBasePlugin.class)
-        project.plugins.apply(CoverallsPlugin.class)
         project.plugins.apply(ArtifactoryPlugin.class)
-        project.plugins.apply(SonarQubePlugin.class)
 
         project.tasks.withType(JavaCompile) {
             options.encoding = 'UTF-8'
@@ -138,7 +136,7 @@ public abstract class Common implements Plugin<Project> {
         configureForSonarQube(project)
     }
 
-    public void configureForJava(Project project) {
+    void configureForJava(Project project) {
         Task jarTask = project.tasks.getByName('jar')
         Task classesTask = project.tasks.getByName('classes')
         Task javadocTask = project.tasks.getByName('javadoc')
@@ -170,7 +168,7 @@ public abstract class Common implements Plugin<Project> {
         }
     }
 
-    public void configureForLicense(Project project) {
+    void configureForLicense(Project project) {
         LicenseExtension licenseExtension = project.extensions.getByName('license')
         licenseExtension.headerURI = new URI(HEADER_LOCATION)
         licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
@@ -193,7 +191,7 @@ public abstract class Common implements Plugin<Project> {
         registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
     }
 
-    public void configureForReleases(Project project) {
+    void configureForReleases(Project project) {
         VersionUtility versionUtility = new VersionUtility()
         BuildFileUtility buildFileUtility = new BuildFileUtility()
         File buildFile = project.getBuildFile()
@@ -253,59 +251,54 @@ public abstract class Common implements Plugin<Project> {
         }
     }
 
-    public void configureForJacoco(Project project) {
+    void configureForJacoco(Project project) {
         project.plugins.apply('jacoco')
 
-        Task jacocoReportTask = project.tasks.getByName('jacocoTestReport')
+        def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class]
+        Task codeCoverageReport = project.tasks.create(options, {
+            executionData project.fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
-        jacocoReportTask.reports {
-            // coveralls plugin demands xml format
-            xml.enabled = true
-            html.enabled = true
-        }
+            sourceSets project.sourceSets.main
 
-        File jacocoDirectory = new File("${project.buildDir}/jacoco")
-        if (jacocoDirectory && jacocoDirectory.exists()) {
-            jacocoReportTask.executionData(project.files(jacocoDirectory.listFiles()))
-        }
+            reports {
+                xml.enabled true
+                xml.destination project.file("${project.buildDir}/reports/jacoco/report.xml")
+                html.enabled true
+                html.destination project.file("${project.buildDir}/reports/jacoco/html")
+                csv.enabled false
+            }
+        })
     }
 
-    public void configureForSonarQube(Project project) {
-        def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
+    void configureForSonarQube(Project project) {
+        def rootProject = project.rootProject
+        if (project == rootProject) {
+            project.plugins.apply(SonarQubePlugin.class)
 
-        def surefireReportPaths = ''
+            def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
 
-        File testResultsDirectory = new File("${project.buildDir}/test-results")
-        if (testResultsDirectory && testResultsDirectory.exists()) {
-            def allSurefireReportDirectories = project.files(testResultsDirectory.listFiles())
-            surefireReportPaths = allSurefireReportDirectories
-                    .getFrom()
-                    .collect { project.relativePath(it) }
-                    .join(',')
-        }
-
-        SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube') as SonarQubeExtension
-
-        sonarQubeExtension.properties {
-            property 'sonar.host.url', 'https://sonarcloud.io'
-            property 'sonar.organization', 'black-duck-software'
-
-            if (surefireReportPaths) {
-                property 'sonar.junit.reportPaths', surefireReportPaths
-            }
-        }
-
-        if (sonarExcludes.size() > 0) {
-            println "Applying the following exclusions to your sonarqube task:"
-            println "\t" + sonarExcludes
+            SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube') as SonarQubeExtension
+            def reportFiles = project.fileTree(project.rootDir.absolutePath).include("**/reports/jacoco/report.xml")
 
             sonarQubeExtension.properties {
-                property 'sonar.exclusions', sonarExcludes
+                property 'sonar.host.url', 'https://sonarcloud.io'
+                property 'sonar.organization', 'black-duck-software'
+
+                property 'sonar.coverage.jacoco.xmlReportPaths', reportFiles
+            }
+
+            if (sonarExcludes.size() > 0) {
+                println "Applying the following exclusions to your sonarqube task:"
+                println "\t" + sonarExcludes
+
+                sonarQubeExtension.properties {
+                    property 'sonar.exclusions', sonarExcludes
+                }
             }
         }
     }
 
-    public void configureForTesting(Project project) {
+    void configureForTesting(Project project) {
         project.dependencies {
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
             testImplementation 'org.junit-pioneer:junit-pioneer:0.3.3'
@@ -348,11 +341,11 @@ public abstract class Common implements Plugin<Project> {
         }
     }
 
-    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
+    void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
         configureDefaultsForArtifactory(project, artifactoryRepo, null)
     }
 
-    public void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
+    void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
         artifactoryPluginConvention.contextUrl = project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]
         artifactoryPluginConvention.publish {

@@ -16,7 +16,6 @@ plugins {
     id 'jacoco'
     id 'signing'
     id 'eclipse'
-    id 'com.github.kt3k.coveralls' version "${COVERALLS_VERSION}"
     id 'org.sonarqube' version "${SONARQUBE_VERSION}"
     id 'com.jfrog.artifactory' version "${ARTIFACTORY_VERSION}"
     id 'com.github.hierynomus.license-base' version "${LICENSE_VERSION}"
@@ -51,9 +50,6 @@ dependencies {
 
     //https://github.com/hierynomus/license-gradle-plugin
     implementation "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:${LICENSE_VERSION}"
-
-    //https://github.com/kt3k/coveralls-gradle-plugin
-    implementation "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${COVERALLS_VERSION}"
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     implementation "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:${NEXUS_STAGING_VERSION}"
