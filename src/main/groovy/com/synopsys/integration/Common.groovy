@@ -19,7 +19,6 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
-import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
@@ -64,6 +63,8 @@ abstract class Common implements Plugin<Project> {
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_USERNAME = 'SONATYPE_USERNAME'
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD = 'SONATYPE_PASSWORD'
 
+    public static final String PROPERTY_TEST_TAGS_INCLUDE = 'cats'
+
     void apply(Project project) {
         if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
             throw new GradleException('The version must be specified before applying this plugin.')
@@ -87,6 +88,8 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
+
+        setExtPropertyOnProject(project, PROPERTY_TEST_TAGS_INCLUDE, '')
 
         // By default we should not exclude anything
         setExtPropertyOnProject(project, PROPERTY_EXCLUDES_FROM_TEST_COVERAGE, '')
@@ -254,7 +257,7 @@ abstract class Common implements Plugin<Project> {
     void configureForJacoco(Project project) {
         project.plugins.apply('jacoco')
 
-        def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class]
+        def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class, 'dependsOn': project.test, 'group': 'Verification', 'description': 'Generate code coverage report for tests executed in project.']
         Task codeCoverageReport = project.tasks.create(options, {
             executionData project.fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
@@ -274,6 +277,7 @@ abstract class Common implements Plugin<Project> {
         def rootProject = project.rootProject
         if (project == rootProject) {
             project.plugins.apply(SonarQubePlugin.class)
+            project.tasks.getByName('sonarqube').dependsOn(project.tasks.getByName('codeCoverageReport'))
 
             def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
 
@@ -305,39 +309,34 @@ abstract class Common implements Plugin<Project> {
             testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
         }
 
-        def allTestTags = ''
-        if (project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS]) {
-            allTestTags += project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS]
-        }
-        if (project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS]) {
-            allTestTags += ',' + project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS]
-        }
-        def testTags = allTestTags.split("\\s*,\\s*")
+        def testTagsToExclude = [] as Set
+        def userDefinedIncludes = project.ext[PROPERTY_TEST_TAGS_INCLUDE] as String
 
-        def descriptionSuffix = testTags.collect { "@Tag(\"${it}\")" }.join(" or ")
+        if (!userDefinedIncludes.equalsIgnoreCase('ALL')) {
+            testTagsToExclude.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS] as String))
+            testTagsToExclude.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS] as String))
+            testTagsToExclude.removeAll(commaStringToSet(userDefinedIncludes))
+        }
+
         project.test {
             useJUnitPlatform {
-                excludeTags testTags
+                if (!testTagsToExclude.isEmpty()) {
+                    if (project == project.rootProject) {
+                        println "Applying the following exclusions to your tests:"
+                        println "\t" + testTagsToExclude
+                    }
+                    excludeTags testTagsToExclude.join(', ').split("\\s*,\\s*")
+                }
             }
-            description += " NOTE: This excludes those tests with ${descriptionSuffix})."
-            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
-        }
-
-        def testAllTask = project.tasks.create('testAll', Test) {
-            group = 'verification'
-            description = "Runs all the tests (ignores tags)."
-            testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
-            dependsOn(project.test)
-        }
-
-        testTags.each { testTag ->
-            def task = project.tasks.create('test' + testTag.capitalize(), Test) {
-                useJUnitPlatform { includeTags testTag }
-                group = 'verification'
-                description = "Runs all the tests with @Tag(\"${testTag}\")."
-                testLogging.showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS])
+            description += " NOTE: By default, all tags are excluded. To include tag(s), use the project property 'cats'. To run all tagged and untagged tests, use 'ALL' for the value of 'cats'."
+            testLogging {
+                showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS] as String)
+                afterSuite { testDescriptor, result ->
+                    if (!testDescriptor.parent) {
+                        println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                    }
+                }
             }
-            testAllTask.dependsOn(task)
         }
     }
 
@@ -361,6 +360,10 @@ abstract class Common implements Plugin<Project> {
         project.tasks.getByName('artifactoryPublish').dependsOn {
             println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_REPO]}"
         }
+    }
+
+    private static Set commaStringToSet(String input) {
+        return input ? input.split(',').collect { it.trim() } as Set : [] as Set
     }
 
     private void setExtPropertyOnProject(Project project, String propertyName, String propertyDefaults) {
