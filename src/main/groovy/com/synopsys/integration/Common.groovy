@@ -312,19 +312,23 @@ abstract class Common implements Plugin<Project> {
         def testTagsToExclude = [] as Set
         def userDefinedIncludes = project.ext[PROPERTY_TEST_TAGS_INCLUDE] as String
 
-        if (!userDefinedIncludes.equalsIgnoreCase('ALL')) {
+        if (userDefinedIncludes.equalsIgnoreCase('ALL') && project == project.rootProject) {
+            println "Applying NO exclusions to your tests."
+        } else {
             testTagsToExclude.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS] as String))
             testTagsToExclude.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS] as String))
             testTagsToExclude.removeAll(commaStringToSet(userDefinedIncludes))
+
+            if (project == project.rootProject) {
+                println "Applying the following exclusions to your tests:"
+                println "\t" + testTagsToExclude
+            }
         }
 
         project.test {
             useJUnitPlatform {
+                includeTags
                 if (!testTagsToExclude.isEmpty()) {
-                    if (project == project.rootProject) {
-                        println "Applying the following exclusions to your tests:"
-                        println "\t" + testTagsToExclude
-                    }
                     excludeTags testTagsToExclude.join(', ').split("\\s*,\\s*")
                 }
             }
