@@ -262,7 +262,7 @@ abstract class Common implements Plugin<Project> {
 
         def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class, 'dependsOn': project.test, 'group': 'Verification', 'description': 'Generate code coverage report for tests executed in project.']
         Task codeCoverageReport = project.tasks.create(options, {
-            executionData project.fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+            executionData project.fileTree(project.buildDir.absolutePath).include("**/jacoco/*.exec")
 
             sourceSets project.sourceSets.main
 
