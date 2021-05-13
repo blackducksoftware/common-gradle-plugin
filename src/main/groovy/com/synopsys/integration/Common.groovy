@@ -64,7 +64,9 @@ abstract class Common implements Plugin<Project> {
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_USERNAME = 'SONATYPE_USERNAME'
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD = 'SONATYPE_PASSWORD'
 
-    public static final String PROPERTY_TEST_TAGS_TO_INCLUDE = 'includeTestTags'
+    public static final String PROPERTY_TEST_TAGS_TO_INCLUDE = 'tags'
+
+    public static final Set<String> ALL_TEST_TAG = ['all'] as Set
 
     void apply(Project project) {
         if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
@@ -260,7 +262,7 @@ abstract class Common implements Plugin<Project> {
 
         def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class, 'dependsOn': project.test, 'group': 'Verification', 'description': 'Generate code coverage report for tests executed in project.']
         Task codeCoverageReport = project.tasks.create(options, {
-            executionData project.fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+            executionData project.fileTree(project.buildDir.absolutePath).include("**/build/jacoco/*.exec")
 
             sourceSets project.sourceSets.main
 
@@ -314,7 +316,7 @@ abstract class Common implements Plugin<Project> {
         includedTestTags.addAll(commaStringToSet(project.ext[PROPERTY_TEST_TAGS_TO_INCLUDE] as String))
 
         def excludedTestTags = [] as Set
-        if (!includedTestTags.join().equalsIgnoreCase('ALL')) {
+        if (ALL_TEST_TAG != includedTestTags) {
             excludedTestTags.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS] as String))
             excludedTestTags.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS] as String))
         }
@@ -322,7 +324,7 @@ abstract class Common implements Plugin<Project> {
         project.test {
             useJUnitPlatform {
                 if (!excludedTestTags.isEmpty()) {
-                    excludeTags excludedTestTags.join(', ').split("\\s*,\\s*")
+                    excludeTags excludedTestTags.toArray(new String[excludedTestTags.size()])
                 }
             }
             description += " NOTE: By default, all tagged tests are excluded. To include tag(s), use the project property ${PROPERTY_TEST_TAGS_TO_INCLUDE}. To run all  tests, use 'ALL' for the value of ${PROPERTY_TEST_TAGS_TO_INCLUDE}."
@@ -336,13 +338,14 @@ abstract class Common implements Plugin<Project> {
             }
         }
 
-        if (!includedTestTags.join().equalsIgnoreCase('ALL')) {
+        if (ALL_TEST_TAG != includedTestTags) {
             includedTestTags.each { includedTestTag ->
-                def options = ['name': 'test' + includedTestTag.capitalize(), 'type': Test.class, 'group': 'Verification', 'description': "Runs all the tests with @Tag(\"${includedTestTag}\")."]
+                def options = ['name': 'test' + includedTestTag.capitalize(), 'type': Test.class, 'group': 'Verification']
                 Task tagTask = project.tasks.create(options, {
                     useJUnitPlatform {
                         includeTags includedTestTag
                     }
+                    description = "Runs all the tests with @Tag(\"${includedTestTag}\")."
                     testLogging {
                         showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS] as String)
                         afterSuite { testDescriptor, result ->
@@ -353,7 +356,6 @@ abstract class Common implements Plugin<Project> {
                     }
                 })
                 project.test.dependsOn(tagTask)
-
             }
         }
     }
