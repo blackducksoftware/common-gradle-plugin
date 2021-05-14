@@ -257,48 +257,6 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureForJacoco(Project project) {
-        project.plugins.apply('jacoco')
-
-        Task jacocoTestReport = project.tasks.findByName('jacocoTestReport')
-        jacocoTestReport.reports {
-            xml.enabled true
-            xml.destination project.file("${project.buildDir}/reports/jacoco/report.xml")
-            html.enabled true
-            html.destination project.file("${project.buildDir}/reports/jacoco/html")
-            csv.enabled false
-        }
-    }
-
-    void configureForSonarQube(Project project) {
-        def rootProject = project.rootProject
-        if (project == rootProject) {
-            project.plugins.apply(SonarQubePlugin.class)
-            project.tasks.getByName('sonarqube').dependsOn(project.tasks.getByName('codeCoverageReport'))
-
-            def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
-
-            SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube') as SonarQubeExtension
-            def reportFiles = project.fileTree(project.rootDir.absolutePath).include("**/reports/jacoco/report.xml")
-
-            sonarQubeExtension.properties {
-                property 'sonar.host.url', 'https://sonarcloud.io'
-                property 'sonar.organization', 'black-duck-software'
-
-                property 'sonar.coverage.jacoco.xmlReportPaths', reportFiles
-            }
-
-            if (sonarExcludes.size() > 0) {
-                println "Applying the following exclusions to your sonarqube task:"
-                println "\t" + sonarExcludes
-
-                sonarQubeExtension.properties {
-                    property 'sonar.exclusions', sonarExcludes
-                }
-            }
-        }
-    }
-
     void configureForTesting(Project project) {
         project.dependencies {
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
@@ -345,6 +303,48 @@ abstract class Common implements Plugin<Project> {
                     testLogging logging
                 })
                 project.test.dependsOn(tagTask)
+            }
+        }
+    }
+
+    void configureForJacoco(Project project) {
+        project.plugins.apply('jacoco')
+
+        Task jacocoTestReport = project.tasks.findByName('jacocoTestReport')
+        jacocoTestReport.reports {
+            xml.enabled true
+            xml.destination project.file("${project.buildDir}/reports/jacoco/report.xml")
+            html.enabled true
+            html.destination project.file("${project.buildDir}/reports/jacoco/html")
+            csv.enabled false
+        }
+    }
+
+    void configureForSonarQube(Project project) {
+        def rootProject = project.rootProject
+        if (project == rootProject) {
+            project.plugins.apply(SonarQubePlugin.class)
+            project.tasks.getByName('sonarqube').dependsOn(project.tasks.getByName('jacocoTestReport'))
+
+            def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
+
+            SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube') as SonarQubeExtension
+            def reportFiles = project.fileTree(project.rootDir.absolutePath).include("**/reports/jacoco/report.xml")
+
+            sonarQubeExtension.properties {
+                property 'sonar.host.url', 'https://sonarcloud.io'
+                property 'sonar.organization', 'black-duck-software'
+
+                property 'sonar.coverage.jacoco.xmlReportPaths', reportFiles
+            }
+
+            if (sonarExcludes.size() > 0) {
+                println "Applying the following exclusions to your sonarqube task:"
+                println "\t" + sonarExcludes
+
+                sonarQubeExtension.properties {
+                    property 'sonar.exclusions', sonarExcludes
+                }
             }
         }
     }
