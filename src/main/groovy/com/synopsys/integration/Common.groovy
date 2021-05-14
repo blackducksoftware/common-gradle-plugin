@@ -321,6 +321,15 @@ abstract class Common implements Plugin<Project> {
             excludedTestTags.addAll(commaStringToSet(project.ext[PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS] as String))
         }
 
+        Closure logging = {
+            showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS] as String)
+            project.test.afterSuite { testDescriptor, result ->
+                if (!testDescriptor.parent) {
+                    println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                }
+            }
+        }
+
         project.test {
             useJUnitPlatform {
                 if (!excludedTestTags.isEmpty()) {
@@ -328,14 +337,7 @@ abstract class Common implements Plugin<Project> {
                 }
             }
             description += " NOTE: By default, all tagged tests are excluded. To include tag(s), use the project property ${PROPERTY_TEST_TAGS_TO_INCLUDE}. To run all  tests, use 'ALL' for the value of ${PROPERTY_TEST_TAGS_TO_INCLUDE}."
-            testLogging {
-                showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS] as String)
-                afterSuite { testDescriptor, result ->
-                    if (!testDescriptor.parent) {
-                        println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
-                    }
-                }
-            }
+            testLogging logging
         }
 
         if (ALL_TEST_TAG != includedTestTags) {
@@ -346,14 +348,7 @@ abstract class Common implements Plugin<Project> {
                         includeTags includedTestTag
                     }
                     description = "Runs all the tests with @Tag(\"${includedTestTag}\")."
-                    testLogging {
-                        showStandardStreams = Boolean.valueOf(project.ext[PROPERTY_JUNIT_SHOW_STANDARD_STREAMS] as String)
-                        afterSuite { testDescriptor, result ->
-                            if (!testDescriptor.parent) {
-                                println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
-                            }
-                        }
-                    }
+                    testLogging logging
                 })
                 project.test.dependsOn(tagTask)
             }
