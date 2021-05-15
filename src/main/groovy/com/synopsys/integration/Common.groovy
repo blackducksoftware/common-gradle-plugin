@@ -310,21 +310,27 @@ abstract class Common implements Plugin<Project> {
     void configureForJacoco(Project project) {
         project.plugins.apply('jacoco')
 
-        Task jacocoTestReport = project.tasks.findByName('jacocoTestReport')
-        jacocoTestReport.reports {
-            xml.enabled true
-            xml.destination project.file("${project.buildDir}/reports/jacoco/report.xml")
-            html.enabled true
-            html.destination project.file("${project.buildDir}/reports/jacoco/html")
-            csv.enabled false
-        }
+        def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class, 'dependsOn': project.test, 'group': 'Verification', 'description': 'Generate code coverage report for tests executed in project.']
+        Task codeCoverageReport = project.tasks.create(options, {
+            executionData project.fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+            sourceSets project.sourceSets.main
+
+            reports {
+                xml.enabled true
+                xml.destination project.file("${project.buildDir}/reports/jacoco/report.xml")
+                html.enabled true
+                html.destination project.file("${project.buildDir}/reports/jacoco/html")
+                csv.enabled false
+            }
+        })
     }
 
     void configureForSonarQube(Project project) {
         def rootProject = project.rootProject
         if (project == rootProject) {
             project.plugins.apply(SonarQubePlugin.class)
-            project.tasks.getByName('sonarqube').dependsOn(project.tasks.getByName('jacocoTestReport'))
+            project.tasks.getByName('sonarqube').dependsOn(project.tasks.getByName('codeCoverageReport'))
 
             def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
 
