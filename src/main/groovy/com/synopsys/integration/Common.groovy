@@ -5,13 +5,13 @@
  *
  * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
  */
+
 package com.synopsys.integration
 
-import com.hierynomus.gradle.license.LicenseBasePlugin
 import com.synopsys.integration.utility.BuildFileUtility
 import com.synopsys.integration.utility.VersionUtility
-import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
+import org.cadixdev.gradle.licenser.LicenseExtension
 import org.gradle.api.*
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.TaskExecutionException
@@ -29,8 +29,8 @@ import org.sonarqube.gradle.SonarQubePlugin
 import java.nio.charset.StandardCharsets
 
 abstract class Common implements Plugin<Project> {
-    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
+    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
@@ -47,6 +47,7 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final String PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
     public static final String PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
+    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER = 'synopsysOverrideIntegrationHeader'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA = 'synopsysOverrideIntegrationEula'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
@@ -84,9 +85,10 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
         setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
         setExtPropertyOnProject(project, PROPERTY_JUNIT_SHOW_STANDARD_STREAMS, 'false')
-        setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
-        setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
-        setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
+        setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, JavaVersion.VERSION_11.toString())
+        setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, JavaVersion.VERSION_11.toString())
+        setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'true')
+        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
         setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
@@ -115,7 +117,7 @@ abstract class Common implements Plugin<Project> {
 
         project.plugins.apply('eclipse')
         project.plugins.apply('maven-publish')
-        project.plugins.apply(LicenseBasePlugin.class)
+        //project.plugins.apply(Licenser.class)
         project.plugins.apply(ArtifactoryPlugin.class)
 
         project.tasks.withType(JavaCompile) {
@@ -135,7 +137,8 @@ abstract class Common implements Plugin<Project> {
         }
 
         configureForJava(project)
-        configureForLicense(project)
+        //configureForHeader(project)
+        configureForProjectSetup(project)
         configureForReleases(project)
         configureForTesting(project)
         configureForJacoco(project)
@@ -143,9 +146,6 @@ abstract class Common implements Plugin<Project> {
     }
 
     void configureForJava(Project project) {
-        Task jarTask = project.tasks.getByName('jar')
-        Task classesTask = project.tasks.getByName('classes')
-        Task javadocTask = project.tasks.getByName('javadoc')
         JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
         javaPluginConvention.sourceCompatibility = project.ext[PROPERTY_JAVA_SOURCE_COMPATIBILITY]
@@ -153,7 +153,7 @@ abstract class Common implements Plugin<Project> {
 
         Task sourcesJarTask = project.tasks.findByName('sourcesJar')
         if (sourcesJarTask == null) {
-            sourcesJarTask = project.tasks.create(name: 'sourcesJar', type: Jar) {
+            project.tasks.create(name: 'sourcesJar', type: Jar) {
                 from javaPluginConvention.sourceSets.main.allSource
                 archiveClassifier = 'sources'
             }
@@ -161,7 +161,7 @@ abstract class Common implements Plugin<Project> {
 
         Task javadocJarTask = project.tasks.findByName('javadocJar')
         if (javadocJarTask == null) {
-            javadocJarTask = project.tasks.create(name: 'javadocJar', type: Jar) {
+            project.tasks.create(name: 'javadocJar', type: Jar) {
                 from project.javadoc
                 archiveClassifier = 'javadoc'
             }
@@ -174,23 +174,27 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureForLicense(Project project) {
+    void configureForHeader(Project project) {
+        registerFileInsertionTask(project, 'createHeader', 'HEADER.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
+
         LicenseExtension licenseExtension = project.extensions.getByName('license')
-        licenseExtension.headerURI = new URI(HEADER_LOCATION)
-        licenseExtension.ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        licenseExtension.ext.projectName = project.name
+        licenseExtension.header = project.file('HEADER.txt')
+        licenseExtension.newLine = false
+        licenseExtension.properties {
+            projectName = project.name
+            year = Calendar.getInstance().get(Calendar.YEAR)
+        }
         licenseExtension.ignoreFailures = true
-        licenseExtension.strictCheck = true
-        licenseExtension.includes(['**/*.groovy', '**/*.java', '**/*.js', '**/*.kt'])
-        licenseExtension.excludes(['/src/test/*.groovy',
-                                   'src/test/*.java',
-                                   '**/module-info.java'])
-        licenseExtension.mapping('java', 'SLASHSTAR_STYLE')
+        licenseExtension.include '**/*.groovy'
+        licenseExtension.include '**/*.java'
+        licenseExtension.include '**/*.js'
+        licenseExtension.include '**/*.kt'
+        licenseExtension.exclude 'src/test/'
+        licenseExtension.exclude 'src/test/'
+        licenseExtension.exclude '**/module-info.java'
+    }
 
-        //task to apply the header to all included files
-        Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
-        project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
-
+    void configureForProjectSetup(Project project) {
         registerFileInsertionTask(project, 'createEula', 'EULA.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
         registerFileInsertionTask(project, 'createProjectLicense', 'LICENSE', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
         registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)

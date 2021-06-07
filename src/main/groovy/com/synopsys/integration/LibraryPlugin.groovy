@@ -5,6 +5,7 @@
  *
  * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
  */
+
 package com.synopsys.integration
 
 /*
@@ -44,7 +45,7 @@ import java.time.Duration
  * This plugin is intended for common libraries. They will be published to
  * maven central and artifactory, using the version (SNAPSHOT or release) to
  * determine the appropriate destination for each.*/
-public class LibraryPlugin extends SimplePlugin {
+class LibraryPlugin extends SimplePlugin {
     void apply(Project project) {
         super.apply(project)
 
