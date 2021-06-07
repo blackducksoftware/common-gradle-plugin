@@ -94,12 +94,10 @@ license {
         projectName = project.name
         year = Calendar.getInstance().get(Calendar.YEAR)
     }
+    newLine = false
     ignoreFailures = true
-    include '**/*.groovy'
-    include '**/*.java'
-    exclude 'src/test/**/*.groovy'
-    exclude 'src/test/**/*.java'
-    exclude '**/module-info.java'
+    include 'src/main/**/*.java'
+    include 'src/main/**/*.groovy'
 }
 
 tasks.getByName('build').dependsOn(updateLicenses)

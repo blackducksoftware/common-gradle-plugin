@@ -1,19 +1,13 @@
-/*
- * common-gradle-plugin
- *
- * Copyright (c) 2021 Synopsys, Inc.
- *
- * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
- */
-
 package com.synopsys.integration
 
 import com.synopsys.integration.utility.BuildFileUtility
 import com.synopsys.integration.utility.VersionUtility
 import org.apache.commons.lang.StringUtils
 import org.cadixdev.gradle.licenser.LicenseExtension
+import org.cadixdev.gradle.licenser.Licenser
 import org.gradle.api.*
 import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -55,6 +49,7 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
     public static final String PROPERTY_EXCLUDES_FROM_TEST_COVERAGE = 'excludesFromTestCoverage'
 
+    public static final String PROPERTY_ARTIFACTORY_ARTIFACT_NAME = 'artifactoryArtifactName'
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
     public static final String PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
     public static final String ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME = 'ARTIFACTORY_DEPLOYER_USER'
@@ -116,9 +111,7 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.plugins.apply('eclipse')
-        project.plugins.apply('maven-publish')
-        //project.plugins.apply(Licenser.class)
-        project.plugins.apply(ArtifactoryPlugin.class)
+        project.plugins.apply(Licenser.class)
 
         project.tasks.withType(JavaCompile) {
             options.encoding = 'UTF-8'
@@ -137,12 +130,18 @@ abstract class Common implements Plugin<Project> {
         }
 
         configureForJava(project)
-        //configureForHeader(project)
-        configureForProjectSetup(project)
-        configureForReleases(project)
+        configureForHeader(project)
         configureForTesting(project)
         configureForJacoco(project)
-        configureForSonarQube(project)
+
+        if (project.rootProject == project && project.name != 'buildSrc') {
+            project.plugins.apply('maven-publish')
+            project.plugins.apply(ArtifactoryPlugin.class)
+
+            configureForProjectSetup(project)
+            configureForReleases(project)
+            configureForSonarQube(project)
+        }
     }
 
     void configureForJava(Project project) {
@@ -175,23 +174,22 @@ abstract class Common implements Plugin<Project> {
     }
 
     void configureForHeader(Project project) {
-        registerFileInsertionTask(project, 'createHeader', 'HEADER.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
+        if (project.rootProject == project) {
+            registerFileInsertionTask(project, 'createHeader', 'HEADER.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
+        }
 
         LicenseExtension licenseExtension = project.extensions.getByName('license')
-        licenseExtension.header = project.file('HEADER.txt')
-        licenseExtension.newLine = false
+        licenseExtension.header = project.rootProject.file('HEADER.txt')
         licenseExtension.properties {
             projectName = project.name
             year = Calendar.getInstance().get(Calendar.YEAR)
         }
+        licenseExtension.newLine = false
         licenseExtension.ignoreFailures = true
-        licenseExtension.include '**/*.groovy'
-        licenseExtension.include '**/*.java'
-        licenseExtension.include '**/*.js'
-        licenseExtension.include '**/*.kt'
-        licenseExtension.exclude 'src/test/'
-        licenseExtension.exclude 'src/test/'
-        licenseExtension.exclude '**/module-info.java'
+        licenseExtension.include 'src/main/**/*.java'
+        licenseExtension.include 'src/main/**/*.groovy'
+        licenseExtension.include 'src/main/**/*.js'
+        licenseExtension.include 'src/main/**/*.kt'
     }
 
     void configureForProjectSetup(Project project) {
@@ -360,10 +358,6 @@ abstract class Common implements Plugin<Project> {
     }
 
     void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
-        configureDefaultsForArtifactory(project, artifactoryRepo, null)
-    }
-
-    void configureDefaultsForArtifactory(Project project, String artifactoryRepo, Closure defaultsClosure) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
         artifactoryPluginConvention.contextUrl = project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]
         artifactoryPluginConvention.publish {
@@ -372,9 +366,17 @@ abstract class Common implements Plugin<Project> {
             password = project.ext[PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD]
         }
 
-        if (defaultsClosure != null) {
-            artifactoryPluginConvention.publisherConfig.defaults(defaultsClosure)
+        if (project.ext.has(PROPERTY_ARTIFACTORY_ARTIFACT_NAME)) {
+            Closure mavenJava = {
+                mavenJava(MavenPublication) {
+                    artifact(project.ext[PROPERTY_ARTIFACTORY_ARTIFACT_NAME])
+                }
+            }
+
+            PublishingExtension publishing = project.extensions.findByName('publishing')
+            publishing.publications mavenJava
         }
+        artifactoryPluginConvention.publisherConfig.defaults({ publications('mavenJava') })
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
             println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_REPO]}"
@@ -402,19 +404,17 @@ abstract class Common implements Plugin<Project> {
     private void registerFileInsertionTask(Project project, String taskName, String fileName, String installFlag, String downloadUrl) {
         Task createdTask = project.task(taskName) {
             doLast {
-                if (project.rootProject == project) {
-                    def projectFile = new File(project.projectDir, fileName)
-                    if (Boolean.valueOf(project.ext[installFlag])) {
-                        if (!projectFile.exists()) {
-                            println("Your project did not contain the file ${fileName} but must contain one. The ${fileName} file will be downloaded automatically.")
-                            installFile(downloadUrl, projectFile)
-                        } else {
-                            println "Your project is configured to NOT get the latest ${fileName} - you should be providing your own up-to-date ${fileName} file. No file will be downloaded or updated automatically."
-                        }
-                    } else {
-                        println "Your project is configured to get the latest ${fileName} from ${downloadUrl}. The ${fileName} file will be downloaded/updated automatically."
+                def projectFile = new File(project.projectDir, fileName)
+                if (Boolean.valueOf(project.ext[installFlag])) {
+                    if (!projectFile.exists()) {
+                        println("Your project did not contain the file ${fileName} but must contain one. The ${fileName} file will be downloaded automatically.")
                         installFile(downloadUrl, projectFile)
+                    } else {
+                        println "Your project is configured to NOT get the latest ${fileName} - you should be providing your own up-to-date ${fileName} file. No file will be downloaded or updated automatically."
                     }
+                } else {
+                    println "Your project is configured to get the latest ${fileName} from ${downloadUrl}. The ${fileName} file will be downloaded/updated automatically."
+                    installFile(downloadUrl, projectFile)
                 }
             }
         }
