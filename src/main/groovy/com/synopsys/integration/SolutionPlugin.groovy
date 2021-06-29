@@ -6,6 +6,9 @@ import org.gradle.api.Project
  * This plugin is meant for final integration solutions. They can create the
  * 'mavenJava' publication for uploading to artifactory, overloading the
  * 'artifactoryRepo' property to affect the destination repository.
+ *
+ * As part of a release, a solution will be made available publicly in
+ * Artifactory.
  */
 
 class SolutionPlugin extends Common {

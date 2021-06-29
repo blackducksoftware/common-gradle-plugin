@@ -3,7 +3,8 @@ package com.synopsys.integration
 import org.gradle.api.Project
 
 /*
- * This plugin is intended for simple java/groovy projects that do not need publishing.
+ * This plugin is intended for simple java/groovy projects that do not need
+ * publishing. These will not end up in a public Artiactory repository.
  */
 
 class SimplePlugin extends Common {

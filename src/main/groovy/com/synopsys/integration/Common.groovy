@@ -110,7 +110,6 @@ abstract class Common implements Plugin<Project> {
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
-        project.plugins.apply('eclipse')
         project.plugins.apply(Licenser.class)
 
         project.tasks.withType(JavaCompile) {
