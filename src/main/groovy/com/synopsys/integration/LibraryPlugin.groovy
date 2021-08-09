@@ -9,25 +9,12 @@ import org.gradle.api.Project
  */
 
 class LibraryPlugin extends SimplePlugin {
+    private Project project
+
     void apply(Project project) {
+        this.project = project
         super.apply(project)
-
-        configureForArtifactoryUpload(project)
-
-        // This must come after the configureForMavenCentralUpload because publishToSonatype does not exist until that is configured
-        project.tasks.create('deployLibrary', {
-            dependsOn 'artifactoryPublish'
-            project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
-        })
-    }
-
-    private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.ext[PROPERTY_ARTIFACTORY_SNAPSHOT_REPO]
-        if (!project.isSnapshot) {
-            artifactoryRepo = project.ext[PROPERTY_ARTIFACTORY_RELEASE_REPO]
-        }
-
-        configureDefaultsForArtifactory(project, artifactoryRepo)
+        configureAdvancedUsage('deployLibrary')
     }
 
 }

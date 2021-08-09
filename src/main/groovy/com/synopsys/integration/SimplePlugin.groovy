@@ -8,12 +8,14 @@ import org.gradle.api.Project
  */
 
 class SimplePlugin extends Common {
-    void apply(Project project) {
-        project.plugins.apply("java-library")
+    private Project project
 
+    void apply(Project project) {
+        this.project = project
+        project.plugins.apply("java-library")
         super.apply(project)
 
-        if (Boolean.valueOf(project.ext[PROPERTY_JAVA_USE_AUTO_MODULE_NAME]) && project.ext.has('moduleName')) {
+        if (Boolean.valueOf(project.ext[PROPERTY_JAVA_USE_AUTO_MODULE_NAME] as String) && project.ext.has('moduleName')) {
             def moduleName = project.ext.moduleName
             project.tasks.getByName('jar') {
                 inputs.property("moduleName", moduleName)

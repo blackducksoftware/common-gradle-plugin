@@ -12,22 +12,13 @@ import org.gradle.api.Project
  */
 
 class SolutionPlugin extends Common {
+    private Project project
+
     void apply(Project project) {
+        this.project = project
         project.plugins.apply('java')
-
         super.apply(project)
-
-        project.tasks.create('deploySolution', {
-            dependsOn 'artifactoryPublish'
-            project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
-        })
-
-        configureForArtifactoryUpload(project)
-    }
-
-    private void configureForArtifactoryUpload(Project project) {
-        String artifactoryRepo = project.ext[PROPERTY_ARTIFACTORY_REPO]
-        configureDefaultsForArtifactory(project, artifactoryRepo)
+        configureAdvancedUsage('deploySolution')
     }
 
 }
