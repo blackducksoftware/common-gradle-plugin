@@ -2,10 +2,12 @@ package com.synopsys.integration
 
 import com.synopsys.integration.utility.BuildFileUtility
 import com.synopsys.integration.utility.VersionUtility
-import org.apache.commons.lang.StringUtils
 import org.cadixdev.gradle.licenser.LicenseExtension
 import org.cadixdev.gradle.licenser.Licenser
-import org.gradle.api.*
+import org.gradle.api.JavaVersion
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.TaskExecutionException
@@ -32,8 +34,7 @@ abstract class Common implements Plugin<Project> {
 
     public static final String PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final String PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
-    public static final String PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
-    public static final String PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactorySnapshotRepo'
+    public static final String PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactoryRepo'
     public static final String PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
     public static final String PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS = 'junitPlatformDefaultTestTags'
     public static final String PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS = 'junitPlatformCustomTestTags'
@@ -64,44 +65,41 @@ abstract class Common implements Plugin<Project> {
 
     public static final Set<String> ALL_TEST_TAG = ['all'] as Set
 
-    void apply(Project project) {
-        if (StringUtils.isBlank(project.version) || project.version == 'unspecified') {
-            throw new GradleException('The version must be specified before applying this plugin.')
-        }
+    private Project project
 
-        project.ext.isSnapshot = project.version.endsWith('-SNAPSHOT')
+    void apply(Project project) {
+        this.project = project
         project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY] = BUILDSCRIPT_DEPENDENCY_LOCATION
 
         // assume some reasonable defaults if the environment doesn't provide specific values
-        setExtPropertyOnProject(project, PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
-        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_REPO, 'bds-integrations-snapshot')
-        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
-        setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
-        setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
-        setExtPropertyOnProject(project, PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
-        setExtPropertyOnProject(project, PROPERTY_JUNIT_SHOW_STANDARD_STREAMS, 'false')
-        setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, JavaVersion.VERSION_11.toString())
-        setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, JavaVersion.VERSION_11.toString())
-        setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'true')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, 'false')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
+        setExtPropertyOnProject(PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
+        setExtPropertyOnProject(PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
+        setExtPropertyOnProject(PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
+        setExtPropertyOnProject(PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
+        setExtPropertyOnProject(PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
+        setExtPropertyOnProject(PROPERTY_JUNIT_SHOW_STANDARD_STREAMS, 'false')
+        setExtPropertyOnProject(PROPERTY_JAVA_SOURCE_COMPATIBILITY, JavaVersion.VERSION_11.toString())
+        setExtPropertyOnProject(PROPERTY_JAVA_TARGET_COMPATIBILITY, JavaVersion.VERSION_11.toString())
+        setExtPropertyOnProject(PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'true')
+        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, 'false')
+        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
+        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
+        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
+        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
 
-        setExtPropertyOnProject(project, PROPERTY_TEST_TAGS_TO_INCLUDE, '')
+        setExtPropertyOnProject(PROPERTY_TEST_TAGS_TO_INCLUDE, '')
 
         // By default we should not exclude anything
-        setExtPropertyOnProject(project, PROPERTY_EXCLUDES_FROM_TEST_COVERAGE, '')
+        setExtPropertyOnProject(PROPERTY_EXCLUDES_FROM_TEST_COVERAGE, '')
 
         // there is no default public artifactory for deploying
-        setExtPropertyOnProject(project, PROPERTY_DEPLOY_ARTIFACTORY_URL, '')
+        setExtPropertyOnProject(PROPERTY_DEPLOY_ARTIFACTORY_URL, '')
 
         // can't assume anything here because passwords have no reasonable defaults
-        setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
-        setExtPropertyOnProjectNoDefaults(project, PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
-        setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_USERNAME, ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
-        setExtPropertyOnProjectNoDefaults(project, PROPERTY_SONATYPE_PASSWORD, ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
+        setExtPropertyOnProjectNoDefaults(PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME)
+        setExtPropertyOnProjectNoDefaults(PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD, ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD)
+        setExtPropertyOnProjectNoDefaults(PROPERTY_SONATYPE_USERNAME, ENVIRONMENT_VARIABLE_SONATYPE_USERNAME)
+        setExtPropertyOnProjectNoDefaults(PROPERTY_SONATYPE_PASSWORD, ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD)
 
         project.repositories {
             mavenLocal()
@@ -128,22 +126,22 @@ abstract class Common implements Plugin<Project> {
             project.group = 'com.synopsys.integration'
         }
 
-        configureForJava(project)
-        configureForHeader(project)
-        configureForTesting(project)
-        configureForJacoco(project)
+        configureForJava()
+        configureForHeader()
+        configureForTesting()
+        configureForJacoco()
 
         if (project.rootProject == project && project.name != 'buildSrc') {
             project.plugins.apply('maven-publish')
             project.plugins.apply(ArtifactoryPlugin.class)
 
-            configureForProjectSetup(project)
-            configureForReleases(project)
-            configureForSonarQube(project)
+            configureForProjectSetup()
+            configureForReleases()
+            configureForSonarQube()
         }
     }
 
-    void configureForJava(Project project) {
+    void configureForJava() {
         JavaPluginConvention javaPluginConvention = project.convention.getPlugin(JavaPluginConvention.class)
 
         javaPluginConvention.sourceCompatibility = project.ext[PROPERTY_JAVA_SOURCE_COMPATIBILITY]
@@ -153,6 +151,7 @@ abstract class Common implements Plugin<Project> {
         if (sourcesJarTask == null) {
             project.tasks.create(name: 'sourcesJar', type: Jar) {
                 from javaPluginConvention.sourceSets.main.allSource
+                //noinspection GroovyAccessibility, GroovyAssignabilityCheck
                 archiveClassifier = 'sources'
             }
         }
@@ -161,6 +160,7 @@ abstract class Common implements Plugin<Project> {
         if (javadocJarTask == null) {
             project.tasks.create(name: 'javadocJar', type: Jar) {
                 from project.javadoc
+                //noinspection GroovyAccessibility, GroovyAssignabilityCheck
                 archiveClassifier = 'javadoc'
             }
         }
@@ -172,18 +172,21 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureForHeader(Project project) {
+    void configureForHeader() {
         if (project.rootProject == project) {
-            registerFileInsertionTask(project, 'createHeader', 'HEADER.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
+            registerFileInsertionTask('createHeader', 'HEADER.txt', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
         }
 
-        LicenseExtension licenseExtension = project.extensions.getByName('license')
+        LicenseExtension licenseExtension = project.extensions.getByName('license') as LicenseExtension
         licenseExtension.header = project.rootProject.file('HEADER.txt')
         licenseExtension.properties {
             projectName = project.name
             year = Calendar.getInstance().get(Calendar.YEAR)
         }
+
+        //noinspection GroovyAccessibility, GroovyAssignabilityCheck
         licenseExtension.newLine = false
+        //noinspection GroovyAccessibility, GroovyAssignabilityCheck
         licenseExtension.ignoreFailures = true
         licenseExtension.include 'src/main/**/*.java'
         licenseExtension.include 'src/main/**/*.groovy'
@@ -191,14 +194,14 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.include 'src/main/**/*.kt'
     }
 
-    void configureForProjectSetup(Project project) {
-        registerFileInsertionTask(project, 'createEula', 'EULA.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
-        registerFileInsertionTask(project, 'createProjectLicense', 'LICENSE', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
-        registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
-        registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
+    void configureForProjectSetup() {
+        registerFileInsertionTask('createEula', 'EULA.txt', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
+        registerFileInsertionTask('createProjectLicense', 'LICENSE', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
+        registerFileInsertionTask('createGitIgnore', '.gitignore', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
+        registerFileInsertionTask('createReadme', 'README.md', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
     }
 
-    void configureForReleases(Project project) {
+    void configureForReleases() {
         VersionUtility versionUtility = new VersionUtility()
         BuildFileUtility buildFileUtility = new BuildFileUtility()
         File buildFile = project.getBuildFile()
@@ -224,7 +227,7 @@ abstract class Common implements Plugin<Project> {
                     println "Ja'loja!!!!!"
                 } catch (Exception e) {
                     println "Could not get the content for the build script dependencies. ${e.getMessage()}"
-                    throw new TaskExecutionException(it, e)
+                    throw new TaskExecutionException(it as Task, e)
                 }
             }
         }
@@ -258,7 +261,7 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureForTesting(Project project) {
+    void configureForTesting() {
         project.dependencies {
             testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
             testImplementation 'org.junit-pioneer:junit-pioneer:0.3.3'
@@ -295,7 +298,8 @@ abstract class Common implements Plugin<Project> {
 
         if (ALL_TEST_TAG != includedTestTags) {
             includedTestTags.each { includedTestTag ->
-                def options = ['name': 'test' + includedTestTag.capitalize(), 'type': Test.class, 'group': 'Verification']
+                String testTag = includedTestTag.capitalize()
+                def options = ['name': 'test' + testTag, 'type': Test.class, 'group': 'Verification']
                 Task tagTask = project.tasks.create(options, {
                     useJUnitPlatform {
                         includeTags includedTestTag
@@ -308,11 +312,11 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureForJacoco(Project project) {
+    void configureForJacoco() {
         project.plugins.apply('jacoco')
 
         def options = ['name': 'codeCoverageReport', 'type': JacocoReport.class, 'dependsOn': project.test, 'group': 'Verification', 'description': 'Generate code coverage report for tests executed in project.']
-        Task codeCoverageReport = project.tasks.create(options, {
+        project.tasks.create(options, {
             executionData project.fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
             sourceSets project.sourceSets.main
@@ -327,7 +331,7 @@ abstract class Common implements Plugin<Project> {
         })
     }
 
-    void configureForSonarQube(Project project) {
+    void configureForSonarQube() {
         def rootProject = project.rootProject
         if (project == rootProject) {
             project.plugins.apply(SonarQubePlugin.class)
@@ -356,8 +360,8 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureDefaultsForArtifactory(Project project, String artifactoryRepo) {
-        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory')
+    void configureDefaultsForArtifactory(String artifactoryRepo) {
+        ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory') as ArtifactoryPluginConvention
         artifactoryPluginConvention.contextUrl = project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]
         artifactoryPluginConvention.publish {
             repository { repoKey = artifactoryRepo }
@@ -372,13 +376,13 @@ abstract class Common implements Plugin<Project> {
                 }
             }
 
-            PublishingExtension publishing = project.extensions.findByName('publishing')
+            PublishingExtension publishing = project.extensions.findByName('publishing') as PublishingExtension
             publishing.publications mavenJava
         }
         artifactoryPluginConvention.publisherConfig.defaults({ publications('mavenJava') })
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
-            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_REPO]}"
+            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_SNAPSHOT_REPO]}"
         }
     }
 
@@ -386,25 +390,25 @@ abstract class Common implements Plugin<Project> {
         return input ? input.split(',').collect { it.trim() } as Set : [] as Set
     }
 
-    private void setExtPropertyOnProject(Project project, String propertyName, String propertyDefaults) {
+    private void setExtPropertyOnProject(String propertyName, String propertyDefaults) {
         project.ext[propertyName] = project.findProperty(propertyName)
         if (!project.ext[propertyName]) {
             project.ext[propertyName] = propertyDefaults
         }
     }
 
-    private void setExtPropertyOnProjectNoDefaults(Project project, String propertyName, String envVarName) {
+    private void setExtPropertyOnProjectNoDefaults(String propertyName, String envVarName) {
         project.ext[propertyName] = project.findProperty(propertyName)
         if (!project.ext[propertyName]) {
             project.ext[propertyName] = System.getenv(envVarName)
         }
     }
 
-    private void registerFileInsertionTask(Project project, String taskName, String fileName, String installFlag, String downloadUrl) {
+    private void registerFileInsertionTask(String taskName, String fileName, String installFlag, String downloadUrl) {
         Task createdTask = project.task(taskName) {
             doLast {
                 def projectFile = new File(project.projectDir, fileName)
-                if (Boolean.valueOf(project.ext[installFlag])) {
+                if (Boolean.valueOf(project.ext[installFlag] as String)) {
                     if (!projectFile.exists()) {
                         println("Your project did not contain the file ${fileName} but must contain one. The ${fileName} file will be downloaded automatically.")
                         installFile(downloadUrl, projectFile)
@@ -422,10 +426,19 @@ abstract class Common implements Plugin<Project> {
 
     // This can't be private as there is a problem when calling private methods from within a closure.
     // https://stackoverflow.com/questions/54636744/gradle-custom-task-implementation-could-not-find-method-for-arguments
-    void installFile(String downloadUrl, File projectFile) {
+    static void installFile(String downloadUrl, File projectFile) {
         def downloadedFile = new URL(downloadUrl)
 
         projectFile.withOutputStream { out -> downloadedFile.withInputStream { from -> out << from } }
+    }
+
+    void configureAdvancedUsage(String taskName) {
+        configureDefaultsForArtifactory(project.ext[PROPERTY_ARTIFACTORY_SNAPSHOT_REPO] as String)
+
+        project.tasks.create(taskName, {
+            dependsOn 'artifactoryPublish'
+            project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
+        })
     }
 
 }
