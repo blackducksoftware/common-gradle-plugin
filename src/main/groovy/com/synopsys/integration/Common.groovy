@@ -34,7 +34,7 @@ abstract class Common implements Plugin<Project> {
 
     public static final String PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final String PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
-    public static final String PROPERTY_ARTIFACTORY_REPO = 'artifactoryRepo'
+    public static final String PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactoryRepo'
     public static final String PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
     public static final String PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS = 'junitPlatformDefaultTestTags'
     public static final String PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS = 'junitPlatformCustomTestTags'
@@ -73,7 +73,7 @@ abstract class Common implements Plugin<Project> {
 
         // assume some reasonable defaults if the environment doesn't provide specific values
         setExtPropertyOnProject(PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
-        setExtPropertyOnProject(PROPERTY_ARTIFACTORY_REPO, 'bds-integrations-snapshot')
+        setExtPropertyOnProject(PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
         setExtPropertyOnProject(PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS, 'integration, performance')
         setExtPropertyOnProject(PROPERTY_JUNIT_PLATFORM_CUSTOM_TEST_TAGS, '')
@@ -382,7 +382,7 @@ abstract class Common implements Plugin<Project> {
         artifactoryPluginConvention.publisherConfig.defaults({ publications('mavenJava') })
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
-            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_REPO]}"
+            println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_SNAPSHOT_REPO]}"
         }
     }
 
@@ -433,7 +433,7 @@ abstract class Common implements Plugin<Project> {
     }
 
     void configureAdvancedUsage(String taskName) {
-        configureDefaultsForArtifactory(project.ext[PROPERTY_ARTIFACTORY_REPO] as String)
+        configureDefaultsForArtifactory(project.ext[PROPERTY_ARTIFACTORY_SNAPSHOT_REPO] as String)
 
         project.tasks.create(taskName, {
             dependsOn 'artifactoryPublish'
