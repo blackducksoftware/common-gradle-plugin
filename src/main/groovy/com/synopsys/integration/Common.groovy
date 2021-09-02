@@ -207,8 +207,10 @@ abstract class Common implements Plugin<Project> {
             registerFileInsertionTask('createHeader', HEADER_NAME, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
         }
 
+        project.tasks.getByName('checkLicenses').dependsOn(project.rootProject.tasks.getByName('createHeader'))
         project.tasks.getByName('checkLicenses').mustRunAfter(project.rootProject.tasks.getByName('createHeader'))
-        project.tasks.getByName('updateLicenses').mustRunAfter(project.tasks.getByName('checkLicenses'))
+        project.tasks.getByName('updateLicenses').dependsOn(project.rootProject.tasks.getByName('createHeader'))
+        project.tasks.getByName('updateLicenses').mustRunAfter(project.rootProject.tasks.getByName('createHeader'))
         project.tasks.getByName('build').dependsOn(project.tasks.getByName('updateLicenses'))
     }
 
