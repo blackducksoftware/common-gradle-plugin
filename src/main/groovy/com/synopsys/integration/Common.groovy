@@ -329,11 +329,11 @@ abstract class Common implements Plugin<Project> {
             sourceSets project.sourceSets.main
 
             reports {
-                xml.enabled true
+                xml.required = true
                 xml.destination project.file("${project.buildDir}/reports/jacoco/report.xml")
-                html.enabled true
+                html.required = true
                 html.destination project.file("${project.buildDir}/reports/jacoco/html")
-                csv.enabled false
+                csv.required = false
             }
         })
     }
