@@ -32,6 +32,8 @@ abstract class Common implements Plugin<Project> {
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
     public static final String BUILDSCRIPT_DEPENDENCY_LOCATION = 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle'
 
+    public static final String HEADER_NAME = 'HEADER.txt'
+
     public static final String PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final String PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
     public static final String PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactoryRepo'
@@ -173,14 +175,11 @@ abstract class Common implements Plugin<Project> {
     }
 
     void configureForHeader() {
-        if (project.rootProject == project) {
-            registerFileInsertionTask('createHeader', 'HEADER.txt', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
-        }
-
         LicenseExtension licenseExtension = project.extensions.getByName('license') as LicenseExtension
-        licenseExtension.header = project.rootProject.file('HEADER.txt')
+        licenseExtension.header = project.rootProject.file(HEADER_NAME)
+
         licenseExtension.properties {
-            projectName = project.name
+            projectName = project.rootProject.name
             year = Calendar.getInstance().get(Calendar.YEAR)
         }
 
@@ -188,10 +187,18 @@ abstract class Common implements Plugin<Project> {
         licenseExtension.newLine = false
         //noinspection GroovyAccessibility, GroovyAssignabilityCheck
         licenseExtension.ignoreFailures = true
-        licenseExtension.include 'src/main/**/*.java'
-        licenseExtension.include 'src/main/**/*.groovy'
-        licenseExtension.include 'src/main/**/*.js'
-        licenseExtension.include 'src/main/**/*.kt'
+
+        licenseExtension.include '**/*.groovy'
+        licenseExtension.include '**/*.js'
+        licenseExtension.include '**/*.java'
+
+        if (project.rootProject == project || project.name == 'buildSrc') {
+            registerFileInsertionTask('createHeader', HEADER_NAME, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
+        }
+
+        project.tasks.getByName('checkLicenses').mustRunAfter(project.rootProject.tasks.getByName('createHeader'))
+        project.tasks.getByName('updateLicenses').mustRunAfter(project.tasks.getByName('checkLicenses'))
+        project.tasks.getByName('build').dependsOn(project.tasks.getByName('updateLicenses'))
     }
 
     void configureForProjectSetup() {
@@ -363,6 +370,7 @@ abstract class Common implements Plugin<Project> {
     void configureDefaultsForArtifactory(String artifactoryRepo) {
         ArtifactoryPluginConvention artifactoryPluginConvention = project.convention.plugins.get('artifactory') as ArtifactoryPluginConvention
         artifactoryPluginConvention.contextUrl = project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL]
+
         artifactoryPluginConvention.publish {
             repository { repoKey = artifactoryRepo }
             username = project.ext[PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME]
