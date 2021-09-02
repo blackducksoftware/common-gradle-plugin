@@ -94,8 +94,9 @@ license {
     }
     newLine = false
     ignoreFailures = true
-    include 'src/main/**/*.java'
-    include 'src/main/**/*.groovy'
+    include '**/*.groovy'
+    include '**/*.js'
+    include '**/*.java'
 }
 
 tasks.getByName('build').dependsOn(updateLicenses)
