@@ -1,3 +1,10 @@
+/*
+ * common-gradle-plugin
+ *
+ * Copyright (c) 2021 Synopsys, Inc.
+ *
+ * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
+ */
 package com.synopsys.integration
 
 import com.synopsys.integration.utility.BuildFileUtility
@@ -23,6 +30,7 @@ import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
 import java.nio.charset.StandardCharsets
+import java.util.jar.Manifest
 
 abstract class Common implements Plugin<Project> {
     public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
@@ -71,6 +79,9 @@ abstract class Common implements Plugin<Project> {
 
     void apply(Project project) {
         this.project = project
+
+        displayApplyMessage()
+
         project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY] = BUILDSCRIPT_DEPENDENCY_LOCATION
 
         // assume some reasonable defaults if the environment doesn't provide specific values
@@ -447,6 +458,22 @@ abstract class Common implements Plugin<Project> {
             dependsOn 'artifactoryPublish'
             project.tasks.findByName('artifactoryPublish').mustRunAfter 'build'
         })
+    }
+
+    private void displayApplyMessage() {
+        if (project.rootProject == project) {
+            try {
+                URLClassLoader cl = (URLClassLoader) getClass().getClassLoader()
+                URL url = cl.findResource("META-INF/MANIFEST.MF")
+                Manifest manifest = new Manifest((url.openStream()))
+
+                if (manifest.mainAttributes.getValue('Plugin-Apply-Message')) {
+                    project.logger.lifecycle(manifest.mainAttributes.getValue('Plugin-Apply-Message'))
+                }
+            } catch (IOException e) {
+                project.logger.warn("Cannot ready plugin's manifest. Cosmetic issue.")
+            }
+        }
     }
 
 }

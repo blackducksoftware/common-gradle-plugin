@@ -123,3 +123,9 @@ artifactory {
 }
 
 artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${deployArtifactoryUrl}/${artifactoryRepo}" }
+
+jar {
+    manifest {
+        attributes("Plugin-Apply-Message": "Applying ${this.project.getProperty('name')}:${this.project.getProperty('version')}")
+    }
+}
