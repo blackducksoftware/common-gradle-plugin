@@ -312,7 +312,7 @@ abstract class Common implements Plugin<Project> {
                     excludeTags excludedTestTags.toArray(new String[excludedTestTags.size()])
                 }
             }
-            description += " NOTE: By default, all tagged tests are excluded. To include tag(s), use the project property ${PROPERTY_TEST_TAGS_TO_INCLUDE}. To run all  tests, use 'ALL' for the value of ${PROPERTY_TEST_TAGS_TO_INCLUDE}."
+            description += " NOTE: By default, all tagged tests are excluded. To include tag(s), use the project property ${PROPERTY_TEST_TAGS_TO_INCLUDE}. To run all tests, use 'ALL' for the value of ${PROPERTY_TEST_TAGS_TO_INCLUDE}."
             testLogging logging
         }
 
@@ -330,6 +330,13 @@ abstract class Common implements Plugin<Project> {
                 project.test.dependsOn(tagTask)
             }
         }
+
+        // Create a "allTests" task for local use
+        def options = ['name': 'allTests', 'type': Test.class, 'group': 'Verification', 'description': 'Runs all tests']
+        project.tasks.create(options, {
+            useJUnitPlatform()
+            testLogging logging
+        })
     }
 
     void configureForJacoco() {
