@@ -475,12 +475,16 @@ abstract class Common implements Plugin<Project> {
                 URLClassLoader cl = (URLClassLoader) getClass().getClassLoader()
                 URL url = cl.findResource("META-INF/MANIFEST.MF")
                 Manifest manifest = new Manifest((url.openStream()))
+                def applyMessage = manifest.mainAttributes.getValue('Plugin-Apply-Message')
 
-                if (manifest.mainAttributes.getValue('Plugin-Apply-Message')) {
-                    project.logger.lifecycle(manifest.mainAttributes.getValue('Plugin-Apply-Message'))
+                if (applyMessage?.trim()) {
+                    if (applyMessage.contains('SNAPSHOT') && manifest.mainAttributes.getValue('Plugin-Create-Date')) {
+                        applyMessage += " created at " + manifest.mainAttributes.getValue('Plugin-Create-Date')
+                    }
+                    project.logger.lifecycle(applyMessage)
                 }
-            } catch (IOException e) {
-                project.logger.warn("Cannot ready plugin's manifest. Cosmetic issue.")
+            } catch (IOException ignored) {
+                project.logger.warn("Cannot read plugin's manifest. Cosmetic issue.")
             }
         }
     }

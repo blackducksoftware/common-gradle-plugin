@@ -127,6 +127,7 @@ artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploadin
 
 jar {
     manifest {
-        attributes("Plugin-Apply-Message": "Applying ${this.project.getProperty('name')}:${this.project.getProperty('version')}")
+        attributes("Plugin-Apply-Message": "Applying ${this.project.getProperty('name')}:${this.project.getProperty('version')}",
+                "Plugin-Create-Date": new Date())
     }
 }
