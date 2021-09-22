@@ -330,13 +330,6 @@ abstract class Common implements Plugin<Project> {
                 project.test.dependsOn(tagTask)
             }
         }
-
-        // Create a "allTests" task for local use
-        def options = ['name': 'allTests', 'type': Test.class, 'group': 'Verification', 'description': 'Runs all tests']
-        project.tasks.create(options, {
-            useJUnitPlatform()
-            testLogging logging
-        })
     }
 
     void configureForJacoco() {
