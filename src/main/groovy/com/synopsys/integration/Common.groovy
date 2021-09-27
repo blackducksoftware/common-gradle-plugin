@@ -109,6 +109,7 @@ abstract class Common implements Plugin<Project> {
         project.repositories {
             mavenLocal()
             maven { url "${project.ext[PROPERTY_DOWNLOAD_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_RELEASE_REPO]}" }
+            maven { url "https://sig-repo.synopsys.com/bds-bdio-release" }
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
