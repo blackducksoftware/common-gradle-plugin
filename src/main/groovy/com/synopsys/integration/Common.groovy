@@ -38,7 +38,7 @@ abstract class Common implements Plugin<Project> {
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
-    public static final String BUILDSCRIPT_DEPENDENCY_LOCATION = 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle'
+    public static final String BUILDSCRIPT_CGP_VERSION_LOCATION = 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-cgp-version.gradle'
 
     public static final String HEADER_NAME = 'HEADER.txt'
 
@@ -57,7 +57,7 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
-    public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
+    public static final String PROPERTY_CGP_VERSION_DEPENDENCY = 'buildscriptDependency'
     public static final String PROPERTY_EXCLUDES_FROM_TEST_COVERAGE = 'excludesFromTestCoverage'
 
     public static final String PROPERTY_ARTIFACTORY_ARTIFACT_NAME = 'artifactoryArtifactName'
@@ -82,7 +82,7 @@ abstract class Common implements Plugin<Project> {
 
         displayApplyMessage()
 
-        project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY] = BUILDSCRIPT_DEPENDENCY_LOCATION
+        project.ext[PROPERTY_CGP_VERSION_DEPENDENCY] = BUILDSCRIPT_CGP_VERSION_LOCATION
 
         // assume some reasonable defaults if the environment doesn't provide specific values
         setExtPropertyOnProject(PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
@@ -225,26 +225,21 @@ abstract class Common implements Plugin<Project> {
     void configureForReleases() {
         VersionUtility versionUtility = new VersionUtility()
         BuildFileUtility buildFileUtility = new BuildFileUtility()
-        File buildFile = project.getBuildFile()
+        File buildSrcBuildFile = project.rootProject.file("buildSrc/build.gradle")
+        File rootProjectBuildFile = project.getBuildFile()
 
-        String buildscriptDependencyLocation = project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY]
+        String buildscriptDependencyLocation = project.ext[PROPERTY_CGP_VERSION_DEPENDENCY]
+        String currentVersion = project.version.toString()
 
         project.tasks.create('jaloja') {
             doLast {
                 try {
                     URL url = new URL(buildscriptDependencyLocation)
-                    String remoteContent = url.getText(StandardCharsets.UTF_8.name())
-
-                    String currentContent = "apply from: '${buildscriptDependencyLocation}', to: buildscript"
-                    println "Updating ${currentContent} to ${remoteContent}"
-                    buildFileUtility.updateBuildScriptDependenciesToRemoteContent(buildFile, remoteContent)
-
-                    String currentVersion = project.version
-                    println "Updating current version ${currentVersion} to a release version"
+                    String remoteContent = url.getText(StandardCharsets.UTF_8.name()).trim()
                     String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
-                    println "New release version ${newVersion}"
-                    project.version = newVersion
-                    buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
+                    buildFileUtility.updateBuildScript(buildSrcBuildFile, rootProjectBuildFile, BuildFileUtility.CGP_VERSION_APPLY_FROM_LINE,
+                            BuildFileUtility.CGP_VERSION_APPLY_FROM_PATTERN, remoteContent)
+                    buildFileUtility.updateVersion(rootProjectBuildFile, currentVersion, newVersion, 'release')
                     println "Ja'loja!!!!!"
                 } catch (Exception e) {
                     println "Could not get the content for the build script dependencies. ${e.getMessage()}"
@@ -255,28 +250,18 @@ abstract class Common implements Plugin<Project> {
 
         project.tasks.create('qaJaloja') {
             doLast {
-                String currentVersion = project.version
-                println "Updating current version ${currentVersion} to a qa version"
                 String newVersion = versionUtility.calculateNextQAVersion(currentVersion)
-                println "New qa version ${newVersion}"
-                project.version = newVersion
-                buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
+                buildFileUtility.updateVersion(rootProjectBuildFile, currentVersion, newVersion, 'qa')
                 println "Ja'loja!!!!!"
             }
         }
 
         project.tasks.create('snapshotJaloja') {
             doLast {
-                String newContent = "apply from: '${buildscriptDependencyLocation}', to: buildscript"
-                println "Updating build script dependencies to ${newContent}"
-                buildFileUtility.updateBuildScriptDependenciesToApplyFromRemote(buildFile, newContent)
-
-                String currentVersion = project.version
-                println "Updating current version ${currentVersion} to a snapshot version"
                 String newVersion = versionUtility.calculateNextSnapshot(currentVersion)
-                println "New snapshot version ${newVersion}"
-                project.version = newVersion
-                buildFileUtility.updateVersion(buildFile, currentVersion, newVersion)
+                buildFileUtility.updateBuildScript(buildSrcBuildFile, rootProjectBuildFile, BuildFileUtility.CGP_VERSION_REMOTE_LINE,
+                        BuildFileUtility.CGP_VERSION_REMOTE_PATTERN, BuildFileUtility.CGP_VERSION_APPLY_FROM_LINE)
+                buildFileUtility.updateVersion(rootProjectBuildFile, currentVersion, newVersion, 'snapshot')
                 println "Ja'loja!!!!!"
             }
         }

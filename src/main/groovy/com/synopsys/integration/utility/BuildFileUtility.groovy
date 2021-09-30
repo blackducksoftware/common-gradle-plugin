@@ -8,68 +8,42 @@
 package com.synopsys.integration.utility
 
 class BuildFileUtility {
-    public static final String START_BUILDSCRIPT_DEPENDENCY = "////////// START BUILDSCRIPT DEPENDENCY //////////"
-    public static final String END_BUILDSCRIPT_DEPENDENCY = "////////// END BUILDSCRIPT DEPENDENCY //////////"
-    public static final String APPLY_FROM_REMOTE = "apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript"
+    public static final String CGP_VERSION_APPLY_FROM_LINE = "apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-cgp-version.gradle'"
+    public static final String CGP_VERSION_APPLY_FROM_PATTERN = "apply\\sfrom:\\s[\"\']?.*buildscript-cgp-version.gradle[\"\']?"
+    public static final String CGP_VERSION_REMOTE_LINE = "project.ext { cgpVersion = '"
+    public static final String CGP_VERSION_REMOTE_PATTERN = "project.ext\\s\\{\\scgpVersion\\s=\\s[\"\']?.*[\"\']?\\s\\}"
 
-    void updateVersion(File buildFile, String currentVersion, String newVersion) {
-        String buildFileContents = buildFile.text
-        String newBuildFileContents = updateVersion(buildFileContents, currentVersion, newVersion)
+    void updateVersion(File buildFile, String currentVersion, String newVersion, String releaseType) {
+        println "Updating version within ${buildFile} to a ${releaseType} version"
+        println "Current version ${currentVersion}"
+        println "New ${releaseType} version ${newVersion}"
 
-        buildFile.text = newBuildFileContents
+        String currentVersionPattern = getVersionLinePattern(currentVersion)
+        String newVersionPattern = getNewVersionLine(newVersion)
+
+        buildFile.text = buildFile.text.replaceAll(currentVersionPattern, newVersionPattern)
     }
 
-    String updateVersion(String buildFileContents, String currentVersion, String newVersion) {
-        String versionLinePattern = getVersionLinePattern(currentVersion)
-        String newVersionLine = getNewVersionLine(newVersion)
-
-        String newContents = buildFileContents.replaceAll(versionLinePattern, newVersionLine)
-        return newContents
-    }
-
-    void updateBuildScriptDependenciesToRemoteContent(File buildFile, String remoteContent) {
-        String buildFileContents = buildFile.text
-        String newBuildFileContents = updateBuildScriptDependenciesToRemoteContent(buildFileContents, remoteContent)
-
-        buildFile.text = newBuildFileContents
-    }
-
-    String updateBuildScriptDependenciesToRemoteContent(String buildFileContents, String remoteContent) {
-        String currentContent = getBuildScriptDependencyLinePattern()
-
-        String newReplacement = START_BUILDSCRIPT_DEPENDENCY + '\n' + remoteContent + '\n' + END_BUILDSCRIPT_DEPENDENCY
-
-        String newContents = buildFileContents.replaceAll(currentContent, newReplacement)
-        return newContents
-    }
-
-    void updateBuildScriptDependenciesToApplyFromRemote(File buildFile, String replacement) {
-        String buildFileContents = buildFile.text
-        String newBuildFileContents = updateBuildScriptDependenciesToApplyFromRemote(buildFileContents, replacement)
-
-        buildFile.text = newBuildFileContents
-    }
-
-    String updateBuildScriptDependenciesToApplyFromRemote(String buildFileContents, String replacement) {
-        String newContents = buildFileContents
-        int startIndex = buildFileContents.indexOf(START_BUILDSCRIPT_DEPENDENCY)
-        int endIndex = buildFileContents.indexOf(END_BUILDSCRIPT_DEPENDENCY)
-        if (startIndex > -1 && endIndex > -1) {
-            newContents = buildFileContents[0..startIndex - 1] + replacement + buildFileContents[endIndex + END_BUILDSCRIPT_DEPENDENCY.length()..-1]
+    void updateBuildScript(File buildSrcBuildFile, File rootProjectBuildFile, String stringContainsPattern, String regExPattern, String replacement) {
+        if (buildSrcBuildFile.exists() && buildSrcBuildFile.text.contains(stringContainsPattern)) {
+            doUpdateBuildScript(buildSrcBuildFile, regExPattern, replacement)
+        } else if (rootProjectBuildFile.text.contains(stringContainsPattern)) {
+            doUpdateBuildScript(rootProjectBuildFile, regExPattern, replacement)
+        } else {
+            println "String not found in buildSrc/build.gradle or build.gradle, not performing search & replace of string: ${stringContainsPattern}"
         }
-        return newContents
     }
 
-    String getBuildScriptDependencyLinePattern() {
-        //    apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
-        return "apply\\sfrom:\\s[\"\']?.*buildscript-dependencies.gradle[\"\']?,\\sto:\\sbuildscript"
+    private void doUpdateBuildScript(File buildFile, String regExPattern, String replacement) {
+        println "Updating ${buildFile} to ${replacement}"
+        buildFile.text = buildFile.text.replaceAll(regExPattern, replacement)
     }
 
-    String getVersionLinePattern(String currentVersion) {
+    private String getVersionLinePattern(String currentVersion) {
         return "version\\s*=\\s*[\"\']?${currentVersion}[\"\']?"
     }
 
-    String getNewVersionLine(String version) {
+    private String getNewVersionLine(String version) {
         return "version = '${version}'"
     }
 
