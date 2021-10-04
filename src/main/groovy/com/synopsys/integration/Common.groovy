@@ -29,7 +29,6 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.sonarqube.gradle.SonarQubeExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
-import java.nio.charset.StandardCharsets
 import java.util.jar.Manifest
 
 abstract class Common implements Plugin<Project> {
@@ -38,7 +37,6 @@ abstract class Common implements Plugin<Project> {
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
-    public static final String BUILDSCRIPT_CGP_VERSION_LOCATION = 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-cgp-version.gradle'
 
     public static final String HEADER_NAME = 'HEADER.txt'
 
@@ -57,7 +55,6 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
-    public static final String PROPERTY_CGP_VERSION_DEPENDENCY = 'buildscriptDependency'
     public static final String PROPERTY_EXCLUDES_FROM_TEST_COVERAGE = 'excludesFromTestCoverage'
 
     public static final String PROPERTY_ARTIFACTORY_ARTIFACT_NAME = 'artifactoryArtifactName'
@@ -81,8 +78,6 @@ abstract class Common implements Plugin<Project> {
         this.project = project
 
         displayApplyMessage()
-
-        project.ext[PROPERTY_CGP_VERSION_DEPENDENCY] = BUILDSCRIPT_CGP_VERSION_LOCATION
 
         // assume some reasonable defaults if the environment doesn't provide specific values
         setExtPropertyOnProject(PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
@@ -228,18 +223,14 @@ abstract class Common implements Plugin<Project> {
         File buildSrcBuildFile = project.rootProject.file("buildSrc/build.gradle")
         File rootProjectBuildFile = project.getBuildFile()
 
-        String buildscriptDependencyLocation = project.ext[PROPERTY_CGP_VERSION_DEPENDENCY]
         String currentVersion = project.version.toString()
 
         project.tasks.create('jaloja') {
             doLast {
                 try {
-                    URL url = new URL(buildscriptDependencyLocation)
-                    String remoteContent = url.getText(StandardCharsets.UTF_8.name()).trim()
                     String newVersion = versionUtility.calculateReleaseVersion(currentVersion)
-                    buildFileUtility.updateBuildScript(buildSrcBuildFile, rootProjectBuildFile, BuildFileUtility.CGP_VERSION_APPLY_FROM_LINE,
-                            BuildFileUtility.CGP_VERSION_APPLY_FROM_PATTERN, remoteContent)
-                    buildFileUtility.updateVersion(rootProjectBuildFile, currentVersion, newVersion, 'release')
+                    buildFileUtility.updateBuildScriptForRelease(buildSrcBuildFile, rootProjectBuildFile)
+                    buildFileUtility.updateBuildScriptVersion(rootProjectBuildFile, newVersion, 'release')
                     println "Ja'loja!!!!!"
                 } catch (Exception e) {
                     println "Could not get the content for the build script dependencies. ${e.getMessage()}"
@@ -251,7 +242,7 @@ abstract class Common implements Plugin<Project> {
         project.tasks.create('qaJaloja') {
             doLast {
                 String newVersion = versionUtility.calculateNextQAVersion(currentVersion)
-                buildFileUtility.updateVersion(rootProjectBuildFile, currentVersion, newVersion, 'qa')
+                buildFileUtility.updateBuildScriptVersion(rootProjectBuildFile, newVersion, 'qa')
                 println "Ja'loja!!!!!"
             }
         }
@@ -259,9 +250,8 @@ abstract class Common implements Plugin<Project> {
         project.tasks.create('snapshotJaloja') {
             doLast {
                 String newVersion = versionUtility.calculateNextSnapshot(currentVersion)
-                buildFileUtility.updateBuildScript(buildSrcBuildFile, rootProjectBuildFile, BuildFileUtility.CGP_VERSION_REMOTE_LINE,
-                        BuildFileUtility.CGP_VERSION_REMOTE_PATTERN, BuildFileUtility.CGP_VERSION_APPLY_FROM_LINE)
-                buildFileUtility.updateVersion(rootProjectBuildFile, currentVersion, newVersion, 'snapshot')
+                buildFileUtility.updateBuildScriptForSnapshot(buildSrcBuildFile, rootProjectBuildFile)
+                buildFileUtility.updateBuildScriptVersion(rootProjectBuildFile, newVersion, 'snapshot')
                 println "Ja'loja!!!!!"
             }
         }
