@@ -16,7 +16,6 @@ plugins {
     id 'eclipse'
     id 'org.sonarqube' version "${SONARQUBE_VERSION}"
     id 'com.jfrog.artifactory' version "${ARTIFACTORY_VERSION}"
-    id 'org.cadixdev.licenser' version "${CADIX_LICENSER_VERSION}"
     id 'io.codearte.nexus-staging' version "${NEXUS_STAGING_VERSION}"
     id 'de.marcphilipp.nexus-publish' version "${NEXUS_PUBLISH_VERSION}"
 }
@@ -45,9 +44,6 @@ dependencies {
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
     implementation "org.jfrog.buildinfo:build-info-extractor-gradle:${ARTIFACTORY_VERSION}"
-
-    //https://github.com/CadixDev/licenser
-    implementation "gradle.plugin.org.cadixdev.gradle:licenser:${CADIX_LICENSER_VERSION}"
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     implementation "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:${NEXUS_STAGING_VERSION}"
@@ -85,21 +81,6 @@ sonarqube {
         property 'sonar.organization', 'black-duck-software'
     }
 }
-
-license {
-    header = project.file('HEADER.txt')
-    properties {
-        projectName = project.name
-        year = Calendar.getInstance().get(Calendar.YEAR)
-    }
-    newLine = false
-    ignoreFailures = true
-    include '**/*.groovy'
-    include '**/*.js'
-    include '**/*.java'
-}
-
-tasks.getByName('build').dependsOn(updateLicenses)
 
 def artifactoryRepo = artifactorySnapshotRepo
 if (!project.version.endsWith('-SNAPSHOT')) {
