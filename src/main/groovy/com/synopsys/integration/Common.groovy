@@ -1,16 +1,7 @@
-/*
- * common-gradle-plugin
- *
- * Copyright (c) 2021 Synopsys, Inc.
- *
- * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
- */
 package com.synopsys.integration
 
 import com.synopsys.integration.utility.BuildFileUtility
 import com.synopsys.integration.utility.VersionUtility
-import org.cadixdev.gradle.licenser.LicenseExtension
-import org.cadixdev.gradle.licenser.Licenser
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -32,13 +23,9 @@ import org.sonarqube.gradle.SonarQubePlugin
 import java.util.jar.Manifest
 
 abstract class Common implements Plugin<Project> {
-    public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
-    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
-
-    public static final String HEADER_NAME = 'HEADER.txt'
 
     public static final String PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final String PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
@@ -50,8 +37,6 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final String PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
     public static final String PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
-    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER = 'synopsysOverrideIntegrationHeader'
-    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA = 'synopsysOverrideIntegrationEula'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
     public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
@@ -89,8 +74,6 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(PROPERTY_JAVA_SOURCE_COMPATIBILITY, JavaVersion.VERSION_11.toString())
         setExtPropertyOnProject(PROPERTY_JAVA_TARGET_COMPATIBILITY, JavaVersion.VERSION_11.toString())
         setExtPropertyOnProject(PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'true')
-        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, 'false')
-        setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
         setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
         setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
         setExtPropertyOnProject(PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
@@ -117,8 +100,6 @@ abstract class Common implements Plugin<Project> {
             maven { url 'https://plugins.gradle.org/m2/' }
         }
 
-        project.plugins.apply(Licenser.class)
-
         project.tasks.withType(JavaCompile) {
             options.encoding = 'UTF-8'
             if (project.hasProperty('jvmArgs')) {
@@ -136,7 +117,6 @@ abstract class Common implements Plugin<Project> {
         }
 
         configureForJava()
-        configureForHeader()
         configureForTesting()
         configureForJacoco()
 
@@ -181,37 +161,7 @@ abstract class Common implements Plugin<Project> {
         }
     }
 
-    void configureForHeader() {
-        LicenseExtension licenseExtension = project.extensions.getByName('license') as LicenseExtension
-        licenseExtension.header = project.rootProject.file(HEADER_NAME)
-
-        licenseExtension.properties {
-            projectName = project.rootProject.name
-            year = Calendar.getInstance().get(Calendar.YEAR)
-        }
-
-        //noinspection GroovyAccessibility, GroovyAssignabilityCheck
-        licenseExtension.newLine = false
-        //noinspection GroovyAccessibility, GroovyAssignabilityCheck
-        licenseExtension.ignoreFailures = true
-
-        licenseExtension.include '**/*.groovy'
-        licenseExtension.include '**/*.js'
-        licenseExtension.include '**/*.java'
-
-        if (project.rootProject == project || project.name == 'buildSrc') {
-            registerFileInsertionTask('createHeader', HEADER_NAME, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_HEADER, HEADER_LOCATION)
-        }
-
-        project.tasks.getByName('checkLicenses').dependsOn(project.rootProject.tasks.getByName('createHeader'))
-        project.tasks.getByName('checkLicenses').mustRunAfter(project.rootProject.tasks.getByName('createHeader'))
-        project.tasks.getByName('updateLicenses').dependsOn(project.rootProject.tasks.getByName('createHeader'))
-        project.tasks.getByName('updateLicenses').mustRunAfter(project.rootProject.tasks.getByName('createHeader'))
-        project.tasks.getByName('build').dependsOn(project.tasks.getByName('updateLicenses'))
-    }
-
     void configureForProjectSetup() {
-        registerFileInsertionTask('createEula', 'EULA.txt', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
         registerFileInsertionTask('createProjectLicense', 'LICENSE', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
         registerFileInsertionTask('createGitIgnore', '.gitignore', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
         registerFileInsertionTask('createReadme', 'README.md', PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
