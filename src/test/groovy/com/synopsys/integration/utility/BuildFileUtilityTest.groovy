@@ -299,7 +299,7 @@ class BuildFileUtilityTest {
                     buildscript {
                         apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
                         ${cgpVersionEntry}
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:\${cgpVersion}" }
+                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:\${managedCgpVersion}" }
                     }
 
                     group 'com.synopsys.integration'
