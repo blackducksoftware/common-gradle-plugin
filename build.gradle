@@ -1,5 +1,3 @@
-import java.time.Duration
-
 buildscript {
     repositories {
         mavenCentral()
@@ -18,7 +16,6 @@ plugins {
     id 'eclipse'
     id 'org.sonarqube' version "${SONARQUBE_VERSION}"
     id 'com.jfrog.artifactory' version "${ARTIFACTORY_VERSION}"
-    id 'com.github.hierynomus.license-base' version "${LICENSE_VERSION}"
     id 'io.codearte.nexus-staging' version "${NEXUS_STAGING_VERSION}"
     id 'de.marcphilipp.nexus-publish' version "${NEXUS_PUBLISH_VERSION}"
 }
@@ -27,11 +24,11 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.synopsys.integration'
-version = '1.13.0-SNAPSHOT'
+version = '2.0.0-SNAPSHOT'
 description = 'A common plugin for all integration libraries and solutions to use.'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenLocal()
@@ -47,9 +44,6 @@ dependencies {
     //https://www.jfrog.com/confluence/display/RTF/Gradle+Artifactory+Plugin
     //https://github.com/JFrogDev/build-info/tree/master/build-info-extractor-gradle
     implementation "org.jfrog.buildinfo:build-info-extractor-gradle:${ARTIFACTORY_VERSION}"
-
-    //https://github.com/hierynomus/license-gradle-plugin
-    implementation "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:${LICENSE_VERSION}"
 
     //https://github.com/Codearte/gradle-nexus-staging-plugin
     implementation "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:${NEXUS_STAGING_VERSION}"
@@ -88,102 +82,6 @@ sonarqube {
     }
 }
 
-license {
-    headerURI = new java.net.URI('https://blackducksoftware.github.io/integration-resources/project/HEADER.txt')
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
-    ext.projectName = project.name
-    ignoreFailures = true
-    includes(['**/*.groovy', '**/*.java'])
-    excludes(['/src/test/*.groovy',
-              'src/test/*.java'])
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
-}
-
-tasks.getByName('build').dependsOn(licenseFormatMain)
-
-nexusStaging {
-    packageGroup = 'com.synopsys'
-    stagingProfileId = '4af8bea8300633'
-    username = sonatypeUsername
-    password = sonatypePassword
-    numberOfRetries = 250
-    delayBetweenRetriesInMillis = 5000
-}
-
-nexusPublishing {
-    repositories {
-        sonatype()
-        connectTimeout = Duration.ofMinutes(10)
-        clientTimeout = Duration.ofMinutes(10)
-    }
-}
-
-publishToSonatype.onlyIf {
-    !project.version.endsWith('-SNAPSHOT')
-}
-
-closeRepository.onlyIf {
-    !project.version.endsWith('-SNAPSHOT')
-}
-
-releaseRepository.onlyIf {
-    !project.version.endsWith('-SNAPSHOT')
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = rootProject.name
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            versionMapping {
-                usage('java-api') {
-                    fromResolutionOf('runtimeClasspath')
-                }
-                usage('java-runtime') {
-                    fromResolutionResult()
-                }
-            }
-            pom {
-                name = rootProject.name
-                description = rootProject.description
-                url = "https://www.github.com/blackducksoftware/${rootProject.name}"
-                licenses {
-                    license {
-                        name = 'Apache License 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'blackduckoss'
-                        name = 'Synopsys OSS'
-                        email = 'oss@synopsys.com'
-                        organization = 'Synopsys, Inc.'
-                        organizationUrl = 'https://www.synopsys.com'
-                        timezone = 'America/New_York'
-                    }
-                }
-                scm {
-                    connection = "scm:git:git://github.com/blackducksoftware/${rootProject.name}.git"
-                    developerConnection = "scm:git:git@github.com:blackducksoftware/${rootProject.name}.git"
-                    url = "https://www.github.com/blackducksoftware/${rootProject.name}"
-                }
-            }
-        }
-    }
-}
-
-publish.dependsOn { println "publish will attempt uploading ${project.name}:${project.version} to maven central" }
-
-signing {
-    required { gradle.taskGraph.hasTask('publish') }
-    sign publishing.publications.mavenJava
-}
-
 def artifactoryRepo = artifactorySnapshotRepo
 if (!project.version.endsWith('-SNAPSHOT')) {
     artifactoryRepo = artifactoryReleaseRepo
@@ -207,3 +105,10 @@ artifactory {
 }
 
 artifactoryPublish.dependsOn { println "artifactoryPublish will attempt uploading ${project.name}:${project.version} to ${deployArtifactoryUrl}/${artifactoryRepo}" }
+
+jar {
+    manifest {
+        attributes("Plugin-Apply-Message": "Applying ${this.project.getProperty('name')}:${this.project.getProperty('version')}",
+                "Plugin-Create-Date": new Date())
+    }
+}

@@ -1,74 +1,59 @@
-/*
- * common-gradle-plugin
- *
- * Copyright (c) 2021 Synopsys, Inc.
- *
- * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
- */
 package com.synopsys.integration.utility
 
-public class BuildFileUtility {
-    public static final String START_BUILDSCRIPT_DEPENDENCY = "////////// START BUILDSCRIPT DEPENDENCY //////////"
-    public static final String END_BUILDSCRIPT_DEPENDENCY = "////////// END BUILDSCRIPT DEPENDENCY //////////"
+import java.nio.charset.StandardCharsets
 
-    public void updateVersion(File buildFile, String currentVersion, String newVersion) {
-        String buildFileContents = buildFile.text
-        String newBuildFileContents = updateVersion(buildFileContents, currentVersion, newVersion)
+class BuildFileUtility {
+    private static final String CGP_VERSION_FILE_NAME = 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-cgp-version.gradle'
+    public static final String CGP_VERSION_APPLY_FROM_LINE = "apply from: '${CGP_VERSION_FILE_NAME}'"
 
-        buildFile.text = newBuildFileContents
+    void updateBuildScriptVersion(File buildFile, String newVersion, String releaseType) {
+        println "Updating version within ${buildFile} to a ${releaseType} version"
+        println "New ${releaseType} version ${newVersion}"
+
+        updateBuildScript("" as File, buildFile, "version = ", "version = '${newVersion}'")
     }
 
-    public String updateVersion(String buildFileContents, String currentVersion, String newVersion) {
-        String versionLinePattern = getVersionLinePattern(currentVersion)
-        String newVersionLine = getNewVersionLine(newVersion)
-
-        String newContents = buildFileContents.replaceAll(versionLinePattern, newVersionLine)
-        return newContents
+    void updateBuildScriptForRelease(File buildSrcBuildFile, File rootProjectBuildFile) {
+        String remoteCgpVersionContents = getRemoteCgpVersionContents()
+        updateBuildScript(buildSrcBuildFile, rootProjectBuildFile, CGP_VERSION_APPLY_FROM_LINE, remoteCgpVersionContents)
     }
 
-    public void updateBuildScriptDependenciesToRemoteContent(File buildFile, String remoteContent) {
-        String buildFileContents = buildFile.text
-        String newBuildFileContents = updateBuildScriptDependenciesToRemoteContent(buildFileContents, remoteContent)
-
-        buildFile.text = newBuildFileContents
+    void updateBuildScriptForSnapshot(File buildSrcBuildFile, File rootProjectBuildFile) {
+        String remoteCgpVersionContents = getRemoteCgpVersionContents()
+        String remoteCgpVersionSearchPattern = remoteCgpVersionContents.substring(0, remoteCgpVersionContents.indexOf("'"))
+        updateBuildScript(buildSrcBuildFile, rootProjectBuildFile, remoteCgpVersionSearchPattern, CGP_VERSION_APPLY_FROM_LINE)
     }
 
-    public String updateBuildScriptDependenciesToRemoteContent(String buildFileContents, String remoteContent) {
-        String currentContent = getBuildScriptDependencyLinePattern()
+    private void updateBuildScript(File buildSrcBuildFile, File rootProjectBuildFile, String searchPattern, String replacement) {
+        boolean foundSearchPattern = doUpdateBuildScript(buildSrcBuildFile, searchPattern, replacement)
 
-        String newReplacement = START_BUILDSCRIPT_DEPENDENCY + '\n' + remoteContent + '\n' + END_BUILDSCRIPT_DEPENDENCY
-
-        String newContents = buildFileContents.replaceAll(currentContent, newReplacement)
-        return newContents
-    }
-
-    public void updateBuildScriptDependenciesToApplyFromRemote(File buildFile, String replacement) {
-        String buildFileContents = buildFile.text
-        String newBuildFileContents = updateBuildScriptDependenciesToApplyFromRemote(buildFileContents, replacement)
-
-        buildFile.text = newBuildFileContents
-    }
-
-    public String updateBuildScriptDependenciesToApplyFromRemote(String buildFileContents, String replacement) {
-        String newContents = buildFileContents
-        int startIndex = buildFileContents.indexOf(START_BUILDSCRIPT_DEPENDENCY)
-        int endIndex = buildFileContents.indexOf(END_BUILDSCRIPT_DEPENDENCY)
-        if (startIndex > -1 && endIndex > -1) {
-            newContents = buildFileContents[0..startIndex - 1] + replacement + buildFileContents[endIndex + END_BUILDSCRIPT_DEPENDENCY.length()..-1]
+        if (!foundSearchPattern) {
+            foundSearchPattern = doUpdateBuildScript(rootProjectBuildFile, searchPattern, replacement)
         }
-        return newContents
+        if (!foundSearchPattern) {
+            println "String not found in buildSrc/build.gradle or build.gradle, not performing search & replace of string: ${searchPattern}"
+        }
     }
 
-    public String getBuildScriptDependencyLinePattern() {
-        return "apply\\sfrom:\\s[\"\']?.*buildscript-dependencies.gradle[\"\']?,\\sto:\\sbuildscript"
+    private boolean doUpdateBuildScript(File buildFile, String searchPattern, String replacement) {
+        if (buildFile.exists()) {
+            List<String> buildFileContents = buildFile.readLines()
+            for (int i = 0; i < buildFileContents.size(); i++) {
+                String line = buildFileContents.get(i)
+                if (line.trim().startsWith(searchPattern)) {
+                    String spacing = line.substring(0, line.indexOf(line.trim()))
+                    buildFileContents.set(i, spacing + replacement)
+                    buildFile.text = buildFileContents.join("\n")
+                    return true
+                }
+            }
+        }
+        return false
     }
 
-    public String getVersionLinePattern(String currentVersion) {
-        return "version\\s*=\\s*[\"\']?${currentVersion}[\"\']?"
-    }
-
-    public String getNewVersionLine(String version) {
-        return "version = '${version}'"
+    static String getRemoteCgpVersionContents() {
+        URL url = new URL(CGP_VERSION_FILE_NAME)
+        return url.getText(StandardCharsets.UTF_8.name()).trim()
     }
 
 }
