@@ -112,3 +112,33 @@ jar {
                 "Plugin-Create-Date": new Date())
     }
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = rootProject.name
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = rootProject.name
+                description = rootProject.description
+                url = "https://www.github.com/blackducksoftware/${rootProject.name}"
+                licenses {
+                    license {
+                        name = 'Apache License 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+            }
+        }
+    }
+}
