@@ -7,7 +7,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -27,8 +26,18 @@ abstract class Common implements Plugin<Project> {
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
     public static final String README_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/README.md'
 
+    // Comes from build server: /home/serv-builder/.gradle/gradle.properties
     public static final String PROPERTY_DEPLOY_ARTIFACTORY_URL = 'deployArtifactoryUrl'
     public static final String PROPERTY_DOWNLOAD_ARTIFACTORY_URL = 'downloadArtifactoryUrl'
+    public static final String PROPERTY_SONATYPE_USERNAME = 'sonatypeUsername'
+    public static final String PROPERTY_SONATYPE_PASSWORD = 'sonatypePassword'
+
+    // Comes from Jenkins, possibly prefaced with: ORG_GRADLE_PROJECT_
+    public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
+    public static final String PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
+    public static final String ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME = 'ARTIFACTORY_DEPLOYER_USER'
+    public static final String ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD = 'ARTIFACTORY_DEPLOYER_PASSWORD'
+
     public static final String PROPERTY_ARTIFACTORY_SNAPSHOT_REPO = 'artifactoryRepo'
     public static final String PROPERTY_ARTIFACTORY_RELEASE_REPO = 'artifactoryReleaseRepo'
     public static final String PROPERTY_JUNIT_PLATFORM_DEFAULT_TEST_TAGS = 'junitPlatformDefaultTestTags'
@@ -43,13 +52,7 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_EXCLUDES_FROM_TEST_COVERAGE = 'excludesFromTestCoverage'
 
     public static final String PROPERTY_ARTIFACTORY_ARTIFACT_NAME = 'artifactoryArtifactName'
-    public static final String PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME = 'artifactoryDeployerUsername'
-    public static final String PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD = 'artifactoryDeployerPassword'
-    public static final String ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_USERNAME = 'ARTIFACTORY_DEPLOYER_USER'
-    public static final String ENVIRONMENT_VARIABLE_ARTIFACTORY_DEPLOYER_PASSWORD = 'ARTIFACTORY_DEPLOYER_PASSWORD'
 
-    public static final String PROPERTY_SONATYPE_USERNAME = 'sonatypeUsername'
-    public static final String PROPERTY_SONATYPE_PASSWORD = 'sonatypePassword'
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_USERNAME = 'SONATYPE_USERNAME'
     public static final String ENVIRONMENT_VARIABLE_SONATYPE_PASSWORD = 'SONATYPE_PASSWORD'
 
@@ -314,18 +317,13 @@ abstract class Common implements Plugin<Project> {
             repository { repoKey = artifactoryRepo }
             username = project.ext[PROPERTY_ARTIFACTORY_DEPLOYER_USERNAME]
             password = project.ext[PROPERTY_ARTIFACTORY_DEPLOYER_PASSWORD]
+            maven = true
         }
 
-        if (project.ext.has(PROPERTY_ARTIFACTORY_ARTIFACT_NAME)) {
-            Closure mavenJava = {
-                mavenJava(MavenPublication) {
-                    artifact(project.ext[PROPERTY_ARTIFACTORY_ARTIFACT_NAME])
-                }
-            }
-
-            PublishingExtension publishing = project.extensions.findByName('publishing') as PublishingExtension
-            publishing.publications mavenJava
+        if (project.ext[PROPERTY_DEPLOY_ARTIFACTORY_URL] == null) {
+            println "PROPERTY_DEPLOY_ARTIFACTORY_URL is not defined. Publish to Artifactory will not publish any artifacts."
         }
+
         artifactoryPluginConvention.publisherConfig.defaults({ publications('mavenJava') })
 
         project.tasks.getByName('artifactoryPublish').dependsOn {
