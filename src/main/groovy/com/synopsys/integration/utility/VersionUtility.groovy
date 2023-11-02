@@ -7,6 +7,8 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 class VersionUtility {
+    public static final String PR_PATTERN = '-PR[0-9]+'
+    public static final String IDETECT_PATTERN = '-IDETECT-[0-9]+'
     public static final String SUFFIX_SNAPSHOT = '-SNAPSHOT'
     public static final String SUFFIX_SIGQA = '-SIGQA'
     public static final String VERSION_PATTERN = '(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)'
@@ -42,6 +44,17 @@ class VersionUtility {
             } else {
                 version += SUFFIX_SIGQA + '1'
             }
+        }
+        return version
+    }
+
+    String calculateNextQAVersionDetect(String currentVersion) {
+        String version = StringUtils.trimToEmpty(currentVersion)
+        if (StringUtils.isNotBlank(version)) {
+            version = RegExUtils.removePattern(version, PR_PATTERN)
+            version = RegExUtils.removePattern(version, IDETECT_PATTERN)
+            version = removeBranchNameFromVersion(version)
+            version = calculateNextQAVersion(version)
         }
         return version
     }
@@ -82,6 +95,15 @@ class VersionUtility {
             }
         }
         return version
+    }
+
+    static String removeBranchNameFromVersion(String currentVersion) {
+        // considers that PR_PATTERN and IDETECT_PATTERN are already removed.
+        if (currentVersion.contains(SUFFIX_SNAPSHOT) && !(currentVersion.endsWith(SUFFIX_SNAPSHOT)))            // if -SNAPSHOT isn't in the end, that means the rest is the branch name
+            currentVersion = currentVersion.replaceAll(/($SUFFIX_SNAPSHOT).*/, '$1')
+        else if (currentVersion =~ (SUFFIX_SIGQA + /\d+/) && !(currentVersion =~ (SUFFIX_SIGQA + /\d+$/)))      // if -SIGQA isn't in the end, that means the rest is the branch name
+            currentVersion = currentVersion.replaceAll(/($SUFFIX_SIGQA\d+).*/, '$1')
+        return currentVersion
     }
 
 }
