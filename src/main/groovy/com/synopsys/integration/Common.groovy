@@ -2,8 +2,6 @@ package com.synopsys.integration
 
 import com.synopsys.integration.utility.BuildFileUtility
 import com.synopsys.integration.utility.VersionUtility
-import org.apache.commons.lang3.RegExUtils
-import org.apache.commons.lang3.StringUtils
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -203,10 +201,13 @@ abstract class Common implements Plugin<Project> {
         }
 
         project.tasks.create('qaJalojaDetect') {
+            final String RUNNING_BRANCH_PROPERTY = 'runningBranch'
             doLast {
-                String newVersion = versionUtility.calculateNextQAVersionDetect(currentVersion) + findVersionSuffixForFeatureBranch()
+                String runningBranch = project.hasProperty(RUNNING_BRANCH_PROPERTY) ?
+                        project.property(RUNNING_BRANCH_PROPERTY) : null
+                String newVersion = versionUtility.calculateNextQAVersionDetect(currentVersion, runningBranch)
                 buildFileUtility.updateBuildScriptVersion(rootProjectBuildFile, newVersion, 'qa')
-                println "Ja'loja!!!!!"
+                println "Ja'loja Detect!!!!!"
             }
         }
 
@@ -415,28 +416,4 @@ abstract class Common implements Plugin<Project> {
             }
         }
     }
-
-    String findVersionSuffixForFeatureBranch() {
-        final String PULL_REQUEST_PROPERTY = 'pullReqNum'
-        final String RUNNING_BRANCH_PROPERTY = 'runningBranch'
-        final String RELEASE_BRANCH_PATTERN = /\d+\.\d+\.[0z]/
-        final String IDETECT_PATTERN = /IDETECT-\d+/
-
-        if (project.hasProperty(RUNNING_BRANCH_PROPERTY)) {
-            String runningBranch = project.property(RUNNING_BRANCH_PROPERTY)
-            if ((runningBranch.contains('origin/master') || runningBranch =~ RELEASE_BRANCH_PATTERN) == Boolean.FALSE) {
-                if (project.hasProperty(PULL_REQUEST_PROPERTY))
-                    return "-PR${project.property(PULL_REQUEST_PROPERTY)}"
-                def matcher = runningBranch =~ IDETECT_PATTERN
-                if (matcher)
-                    return '-' + matcher[0]
-                else {
-                    runningBranch = StringUtils.replace(runningBranch, 'origin/', '')
-                    return '-' + RegExUtils.replaceAll(runningBranch, '/', '.')
-                }
-            }
-        }
-        return ''
-    }
-
 }
