@@ -110,10 +110,13 @@ class VersionUtility {
     String removeBranchNameFromVersion(String currentVersion) {
         if (currentVersion.endsWith(SUFFIX_SNAPSHOT) || currentVersion =~ (SUFFIX_SIGQA + /\d+$/))
             return currentVersion
-        if (currentVersion.contains(SUFFIX_SNAPSHOT))                                           // if -SNAPSHOT isn't in the end, that means the rest is the branch name
+        // if -SNAPSHOT isn't in the end, that means the rest is the branch name
+        if (currentVersion.contains(SUFFIX_SNAPSHOT))
             return currentVersion.replaceAll(/($SUFFIX_SNAPSHOT).*/, '$1')
-        if (currentVersion =~ (SUFFIX_SIGQA + /\d+/))                                           // if -SIGQA[digit] isn't in the end, that means the rest is the branch name
+        // if -SIGQA[digit] isn't in the end, that means the rest is the branch name
+        if (currentVersion =~ (SUFFIX_SIGQA + /\d+/))
             return currentVersion.replaceAll(/($SUFFIX_SIGQA\d+).*/, '$1')
-        return currentVersion.replaceAll(/($VERSION_PATTERN).*/, '$1')         // if none of the above exists, fetch substring upto the version
+        // if none of the above exists, fetch substring upto the version
+        return currentVersion.replaceAll(/($VERSION_PATTERN).*/, '$1')
     }
 }
