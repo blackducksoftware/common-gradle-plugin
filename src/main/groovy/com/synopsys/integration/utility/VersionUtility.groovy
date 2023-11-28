@@ -10,6 +10,7 @@ class VersionUtility {
     public static final String SUFFIX_SNAPSHOT = '-SNAPSHOT'
     public static final String SUFFIX_SIGQA = '-SIGQA'
     public static final String VERSION_PATTERN = '(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)'
+    public static final String RELEASE_BRANCH_PATTERN = '(\\d+\\.)(\\d+\\.)((\\d+\\.)*)([0z])'
 
     String calculateReleaseVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
@@ -44,6 +45,16 @@ class VersionUtility {
             }
         }
         return version
+    }
+
+    String calculateNextQAVersionDetect(String currentVersion, String runningBranch) {
+        String version = StringUtils.trimToEmpty(currentVersion)
+        if (StringUtils.isNotBlank(version)) {
+            version = removeBranchNameFromVersion(version)
+            version = calculateNextQAVersion(version)
+        }
+        String branchSuffix = findVersionSuffixForBranch(runningBranch)
+        return StringUtils.isNotBlank(branchSuffix) ? (version + '-' + branchSuffix) : version
     }
 
     String calculateNextSnapshot(String currentVersion) {
@@ -84,4 +95,28 @@ class VersionUtility {
         return version
     }
 
+    String findVersionSuffixForBranch(String runningBranch) {
+        if (StringUtils.isNotBlank(runningBranch)) {
+            runningBranch = StringUtils.replace(runningBranch, "origin/", '')
+            if ((runningBranch == 'master' || runningBranch =~ ("^${RELEASE_BRANCH_PATTERN}\$")) == Boolean.FALSE) {
+                runningBranch = StringUtils.replace(runningBranch, "dev/", '')
+                runningBranch = StringUtils.replace(runningBranch, "feature/", '')
+                return RegExUtils.replaceAll(runningBranch, '/', '.')
+            }
+        }
+        return ''
+    }
+
+    String removeBranchNameFromVersion(String currentVersion) {
+        if (currentVersion.endsWith(SUFFIX_SNAPSHOT) || currentVersion =~ (SUFFIX_SIGQA + /\d+$/))
+            return currentVersion
+        // if -SNAPSHOT isn't in the end, that means the rest is the branch name
+        if (currentVersion.contains(SUFFIX_SNAPSHOT))
+            return currentVersion.replaceAll(/($SUFFIX_SNAPSHOT).*/, '$1')
+        // if -SIGQA[digit] isn't in the end, that means the rest is the branch name
+        if (currentVersion =~ (SUFFIX_SIGQA + /\d+/))
+            return currentVersion.replaceAll(/($SUFFIX_SIGQA\d+).*/, '$1')
+        // if none of the above exists, fetch substring upto the version
+        return currentVersion.replaceAll(/($VERSION_PATTERN).*/, '$1')
+    }
 }

@@ -200,6 +200,17 @@ abstract class Common implements Plugin<Project> {
             }
         }
 
+        project.tasks.create('qaJalojaDetect') {
+            final String RUNNING_BRANCH_PROPERTY = 'runningBranch'
+            doLast {
+                String runningBranch = project.hasProperty(RUNNING_BRANCH_PROPERTY) ?
+                        project.property(RUNNING_BRANCH_PROPERTY) : null
+                String newVersion = versionUtility.calculateNextQAVersionDetect(currentVersion, runningBranch)
+                buildFileUtility.updateBuildScriptVersion(rootProjectBuildFile, newVersion, 'qa')
+                println "Ja'loja Detect!!!!!"
+            }
+        }
+
         project.tasks.create('snapshotJaloja') {
             doLast {
                 String newVersion = versionUtility.calculateNextSnapshot(currentVersion)
@@ -405,5 +416,4 @@ abstract class Common implements Plugin<Project> {
             }
         }
     }
-
 }

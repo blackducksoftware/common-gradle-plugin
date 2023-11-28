@@ -140,4 +140,58 @@ class VersionUtilityTest {
         assertEquals('4.7.4-SNAPSHOT', version)
     }
 
+    @Test
+    void testVersionSuffixForBranch() {
+        VersionUtility versionUtility = new VersionUtility()
+        assertEquals('dev_name.branch-name-IDETECT-4081', versionUtility.findVersionSuffixForBranch('origin/feature/dev_name/branch-name-IDETECT-4081'))
+        assertEquals('dev_name.branch-name', versionUtility.findVersionSuffixForBranch('origin/dev_name/branch-name'))
+        assertEquals('branch-name', versionUtility.findVersionSuffixForBranch('origin/dev/branch-name'))
+
+        // for RELEASE and MASTER branch, suffix should be empty.
+        assertEquals('', versionUtility.findVersionSuffixForBranch('9.1.z'))
+        assertEquals('', versionUtility.findVersionSuffixForBranch('8.10.0'))
+        assertEquals('', versionUtility.findVersionSuffixForBranch('8.10.32.0'))
+        assertEquals('', versionUtility.findVersionSuffixForBranch('origin/8.10.0'))
+        assertEquals('', versionUtility.findVersionSuffixForBranch('origin/8.10.012.951.z'))
+        assertEquals('', versionUtility.findVersionSuffixForBranch('origin/8.10.0.12.0'))
+        assertEquals('', versionUtility.findVersionSuffixForBranch('origin/master'))
+
+        // the below tests are for WRONG Patterns of RELEASE branch and MASTER branch. So, suffix will not be empty.
+        assertEquals('master-of-puppets', versionUtility.findVersionSuffixForBranch('origin/master-of-puppets'))
+        assertEquals('8.10.12.951..z', versionUtility.findVersionSuffixForBranch('origin/8.10.12.951..z'))
+        assertEquals('8.10.012.951..z', versionUtility.findVersionSuffixForBranch('origin/8.10.012.951..z'))
+        assertEquals('8.10.0.12.1', versionUtility.findVersionSuffixForBranch('origin/8.10.0.12.1'))
+    }
+
+    @Test
+    void testVersionBranchSuffixRemoval() {
+        VersionUtility versionUtility = new VersionUtility()
+        String currentVersion = 'project-name-9.10.1-SIGQA1-dev_name.branch-name'
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA2-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+
+        currentVersion = 'project-name-9.10.1-SIGQA1'
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA2', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+
+        currentVersion = 'project-name-9.10.1-SNAPSHOT'
+        assertEquals('project-name-9.10.1-SNAPSHOT', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+
+        // the below currentVersion(s) are unexpected to occur. but still handled just in case.
+        currentVersion = 'project-name-9.10.1-SNAPSHOT-dev_name.branch-name'
+        assertEquals('project-name-9.10.1-SNAPSHOT', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA1-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+
+        currentVersion = 'project-name-9.10.1-dev_name.branch-name'
+        assertEquals('project-name-9.10.1', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA1-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+
+        currentVersion = 'project-name-9.10.45.012-dev_name.branch-name'
+        assertEquals('project-name-9.10.45.012', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.45.012-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.45.012-SIGQA1-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+    }
 }
