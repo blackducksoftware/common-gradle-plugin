@@ -170,6 +170,11 @@ class VersionUtilityTest {
         assertEquals('project-name-9.10.1-SIGQA1', versionUtility.removeBranchNameFromVersion(currentVersion))
         assertEquals('project-name-9.10.1-SIGQA2-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
 
+        currentVersion = 'project-name-9.10.1-SIGQA1-dev_name.branch-name-SNAPSHOT'
+        assertEquals('project-name-9.10.1-SIGQA1-SNAPSHOT', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA2-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA1'))
+
         currentVersion = 'project-name-9.10.1-SIGQA1'
         assertEquals('project-name-9.10.1-SIGQA1', versionUtility.removeBranchNameFromVersion(currentVersion))
         assertEquals('project-name-9.10.1-SIGQA2', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
@@ -193,5 +198,45 @@ class VersionUtilityTest {
         assertEquals('project-name-9.10.45.012', versionUtility.removeBranchNameFromVersion(currentVersion))
         assertEquals('project-name-9.10.45.012-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
         assertEquals('project-name-9.10.45.012-SIGQA1-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+    }
+
+    @Test
+    void allPossibleCurrentVersionsTest() {
+        VersionUtility versionUtility = new VersionUtility()
+        String currentVersion = 'project-name-9.10.1'
+        assertEquals('project-name-9.10.1', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA1-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+        assertEquals('project-name-9.10.1-SIGQA2-dev_name.branch-name-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA1-dev_name.branch-name'))
+
+        currentVersion = 'project-name-9.10.1-SNAPSHOT'
+        assertEquals('project-name-9.10.1-SNAPSHOT', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA1', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA1-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion,'origin/dev_name/branch-name'))
+        assertEquals('project-name-9.10.1-SIGQA2-dev_name.branch-name-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA1-dev_name.branch-name'))
+
+        currentVersion = 'project-name-9.10.1-SIGQA2'
+        assertEquals('project-name-9.10.1-SIGQA2', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA3', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA3-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+        assertEquals('project-name-9.10.1-SIGQA4-dev_name.branch-name-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA3-dev_name.branch-name'))
+
+        currentVersion = 'project-name-9.10.1-SIGQA2-SNAPSHOT'
+        assertEquals('project-name-9.10.1-SIGQA2-SNAPSHOT', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA2', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA2-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+        assertEquals('project-name-9.10.1-SIGQA3-dev_name.branch-name-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA2-dev_name.branch-name'))
+
+        currentVersion = 'project-name-9.10.1-SIGQA2-dev_name.branch-name'
+        assertEquals('project-name-9.10.1-SIGQA2', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA3', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA3-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+        assertEquals('project-name-9.10.1-SIGQA4-dev_name.branch-name-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA3-dev_name.branch-name'))
+
+        currentVersion = 'project-name-9.10.1-SIGQA2-dev_name.branch-name-SNAPSHOT'
+        assertEquals('project-name-9.10.1-SIGQA2-SNAPSHOT', versionUtility.removeBranchNameFromVersion(currentVersion))
+        assertEquals('project-name-9.10.1-SIGQA2', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/master'))
+        assertEquals('project-name-9.10.1-SIGQA2-dev_name.branch-name', versionUtility.calculateNextQAVersionDetect(currentVersion, 'origin/dev_name/branch-name'))
+        assertEquals('project-name-9.10.1-SIGQA3-dev_name.branch-name-SNAPSHOT', versionUtility.calculateNextSnapshot('project-name-9.10.1-SIGQA2-dev_name.branch-name'))
     }
 }
