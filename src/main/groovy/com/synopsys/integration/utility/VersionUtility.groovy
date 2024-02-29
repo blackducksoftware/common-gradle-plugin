@@ -10,7 +10,7 @@ class VersionUtility {
     public static final String SUFFIX_SNAPSHOT = '-SNAPSHOT'
     public static final String SUFFIX_SIGQA = '-SIGQA'
     public static final String VERSION_PATTERN = '(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)'
-    public static final String RELEASE_BRANCH_PATTERN = '(\\d+\\.)(\\d+\\.)((\\d+\\.)*)([0z])'
+    public static final String RELEASE_BRANCH_PATTERN = '(\\d+\\.)(\\d+\\.)((\\d+\\.)*)(\\d+|z)'
 
     String calculateReleaseVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
