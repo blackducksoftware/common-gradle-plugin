@@ -10,7 +10,7 @@ class VersionUtility {
     public static final String SUFFIX_SNAPSHOT = '-SNAPSHOT'
     public static final String SUFFIX_SIGQA = '-SIGQA'
     public static final String VERSION_PATTERN = '(\\d+\\.)(\\d+\\.)(\\d+)((\\.\\d+)*)'
-    public static final String RELEASE_BRANCH_PATTERN = '(\\d+\\.)(\\d+\\.)((\\d+\\.)*)([0z])'
+    public static final String RELEASE_BRANCH_PATTERN = '(\\d+\\.)(\\d+\\.)((\\d+\\.)*)(\\d+|z)'
 
     String calculateReleaseVersion(String currentVersion) {
         String version = StringUtils.trimToEmpty(currentVersion)
@@ -108,12 +108,15 @@ class VersionUtility {
     }
 
     String removeBranchNameFromVersion(String currentVersion) {
-        if (currentVersion.endsWith(SUFFIX_SNAPSHOT) || currentVersion =~ (SUFFIX_SIGQA + /\d+$/))
-            return currentVersion
-        // if -SNAPSHOT isn't in the end, that means the rest is the branch name
+        if (currentVersion.endsWith(SUFFIX_SNAPSHOT)) {
+            if (currentVersion =~ (SUFFIX_SIGQA + /\d+/))
+                return currentVersion.replaceAll(/($SUFFIX_SIGQA\d+).*/, '$1') + SUFFIX_SNAPSHOT
+            return currentVersion.replaceAll(/($VERSION_PATTERN).*/, '$1') + SUFFIX_SNAPSHOT
+        }
+        // if -SNAPSHOT isn't in the end, that means the rest is the branch name. Although -SNAPSHOT should always be at the end.
         if (currentVersion.contains(SUFFIX_SNAPSHOT))
             return currentVersion.replaceAll(/($SUFFIX_SNAPSHOT).*/, '$1')
-        // if -SIGQA[digit] isn't in the end, that means the rest is the branch name
+        // -SNAPSHOT is not present. if -SIGQA[digit] isn't in the end, that means the rest is the branch name
         if (currentVersion =~ (SUFFIX_SIGQA + /\d+/))
             return currentVersion.replaceAll(/($SUFFIX_SIGQA\d+).*/, '$1')
         // if none of the above exists, fetch substring upto the version
