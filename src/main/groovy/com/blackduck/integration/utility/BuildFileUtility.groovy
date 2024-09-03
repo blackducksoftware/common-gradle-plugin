@@ -1,4 +1,4 @@
-package com.synopsys.integration.utility
+package com.blackduck.integration.utility
 
 import java.nio.charset.StandardCharsets
 

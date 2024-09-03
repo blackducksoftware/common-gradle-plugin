@@ -1,4 +1,4 @@
-package com.synopsys.integration.utility
+package com.blackduck.integration.utility
 
 import org.apache.commons.lang3.RegExUtils
 import org.apache.commons.lang3.StringUtils
