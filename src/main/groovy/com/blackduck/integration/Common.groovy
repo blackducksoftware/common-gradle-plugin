@@ -29,7 +29,6 @@ import org.sonarqube.gradle.SonarQubePlugin
 import java.nio.charset.StandardCharsets
 
 abstract class Common implements Plugin<Project> {
-    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
@@ -47,7 +46,6 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final String PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
     public static final String PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
-    public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_EULA = 'blackduckOverrideIntegrationEula'
     public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_LICENSE = 'blackduckOverrideIntegrationLicense'
     public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_GIT_IGNORE = 'blackduckOverrideIntegrationGitIgnore'
     public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_README = 'blackduckOverrideIntegrationReadme'
@@ -87,7 +85,6 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
-        setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_EULA, 'false')
         setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_LICENSE, 'false')
         setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
         setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_README, 'true')
@@ -192,7 +189,6 @@ abstract class Common implements Plugin<Project> {
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
 
-        registerFileInsertionTask(project, 'createEula', 'EULA.txt', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
         registerFileInsertionTask(project, 'createProjectLicense', 'LICENSE', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
         registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
         registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_README, README_LOCATION)
