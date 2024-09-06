@@ -5,7 +5,7 @@
  *
  * Use subject to the terms and conditions of the Black Duck Software End User Software License and Maintenance Agreement. All rights reserved worldwide.
  */
-package com.synopsys.integration
+package com.blackduck.integration
 
 import org.gradle.api.Project
 

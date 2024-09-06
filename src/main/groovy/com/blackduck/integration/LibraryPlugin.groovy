@@ -5,7 +5,7 @@
  *
  * Use subject to the terms and conditions of the Black Duck Software End User Software License and Maintenance Agreement. All rights reserved worldwide.
  */
-package com.synopsys.integration
+package com.blackduck.integration
 
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import de.marcphilipp.gradle.nexus.NexusPublishPlugin
@@ -53,7 +53,7 @@ public class LibraryPlugin extends SimplePlugin {
         NexusStagingExtension nexusStagingExtension = project.extensions.getByName('nexusStaging')
 
         if (null == nexusStagingExtension.packageGroup || nexusStagingExtension.packageGroup.trim().equals("")) {
-            nexusStagingExtension.packageGroup = 'com.synopsys'
+            nexusStagingExtension.packageGroup = 'com.blackduck'
             nexusStagingExtension.stagingProfileId = '4af8bea8300633'
         }
         nexusStagingExtension.username = sonatypeUsername
@@ -99,10 +99,10 @@ public class LibraryPlugin extends SimplePlugin {
                         developers {
                             developer {
                                 id = 'blackduckoss'
-                                name = 'Synopsys OSS'
-                                email = 'oss@synopsys.com'
-                                organization = 'Synopsys, Inc.'
-                                organizationUrl = 'http://www.synopsys.com'
+                                name = 'Black Duck OSS'
+                                email = 'oss@blackduck.com'
+                                organization = 'Black Duck, Inc.'
+                                organizationUrl = 'http://www.blackduck.com'
                                 timezone = 'America/New_York'
                             }
                         }

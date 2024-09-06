@@ -5,7 +5,7 @@
  *
  * Use subject to the terms and conditions of the Black Duck Software End User Software License and Maintenance Agreement. All rights reserved worldwide.
  */
-package com.synopsys.integration.utility
+package com.blackduck.integration.utility
 
 import org.apache.commons.lang3.RegExUtils
 import org.apache.commons.lang3.StringUtils
