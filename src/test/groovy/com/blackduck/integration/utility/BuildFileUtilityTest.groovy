@@ -1,4 +1,4 @@
-package com.synopsys.integration.utility
+package com.blackduck.integration.utility
 
 import org.junit.jupiter.api.Test
 
@@ -91,7 +91,7 @@ class BuildFileUtilityTest {
                                           subprojects {
                                               group = rootProject.group
                                               version = rootProject.version
-                                              apply plugin: 'com.synopsys.integration.simple'
+                                              apply plugin: 'com.blackduck.integration.simple'
                                           }
                                           """
 
@@ -299,12 +299,12 @@ class BuildFileUtilityTest {
                     buildscript {
                         apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
                         ${cgpVersionEntry}
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:\${managedCgpVersion}" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:\${managedCgpVersion}" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     ${versionString}
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'

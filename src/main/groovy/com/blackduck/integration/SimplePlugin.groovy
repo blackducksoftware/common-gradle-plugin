@@ -1,4 +1,4 @@
-package com.synopsys.integration
+package com.blackduck.integration
 
 import org.gradle.api.Project
 
