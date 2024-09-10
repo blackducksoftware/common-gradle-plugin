@@ -2,7 +2,6 @@ package com.blackduck.integration
 
 import com.blackduck.integration.utility.BuildFileUtility
 import com.blackduck.integration.utility.VersionUtility
-
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
