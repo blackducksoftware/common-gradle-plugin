@@ -5,6 +5,7 @@ buildscript {
         mavenCentral()
         maven {
             url "https://plugins.gradle.org/m2/"
+            url "https://jfrog.bintray.com/jfrog-jars"
         }
     }
 }
@@ -26,8 +27,8 @@ plugins {
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
-group = 'com.synopsys.integration'
-version = '1.12.0'
+group = 'com.blackduck.integration'
+version = '1.13.0-SNAPSHOT'
 description = 'A common plugin for all integration libraries and solutions to use.'
 
 sourceCompatibility = 1.8
@@ -38,6 +39,7 @@ repositories {
     maven { url "${project.ext.downloadArtifactoryUrl}/${project.ext.artifactoryReleaseRepo}" }
     mavenCentral()
     maven { url 'https://plugins.gradle.org/m2/' }
+    maven { url "https://jfrog.bintray.com/jfrog-jars" }
 }
 
 dependencies {
@@ -104,7 +106,7 @@ license {
 tasks.getByName('build').dependsOn(licenseFormatMain)
 
 nexusStaging {
-    packageGroup = 'com.synopsys'
+    packageGroup = 'com.blackduck'
     stagingProfileId = '4af8bea8300633'
     username = sonatypeUsername
     password = sonatypePassword
@@ -160,10 +162,10 @@ publishing {
                 developers {
                     developer {
                         id = 'blackduckoss'
-                        name = 'Synopsys OSS'
-                        email = 'oss@synopsys.com'
-                        organization = 'Synopsys, Inc.'
-                        organizationUrl = 'https://www.synopsys.com'
+                        name = 'Black Duck OSS'
+                        email = 'oss@blackduck.com'
+                        organization = 'Black Duck, Inc.'
+                        organizationUrl = 'https://www.blackduck.com'
                         timezone = 'America/New_York'
                     }
                 }

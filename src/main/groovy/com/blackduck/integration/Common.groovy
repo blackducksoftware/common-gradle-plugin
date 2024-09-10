@@ -1,15 +1,15 @@
 /*
  * common-gradle-plugin
  *
- * Copyright (c) 2021 Synopsys, Inc.
+ * Copyright (c) 2024 Black Duck Software, Inc.
  *
- * Use subject to the terms and conditions of the Synopsys End User Software License and Maintenance Agreement. All rights reserved worldwide.
+ * Use subject to the terms and conditions of the Black Duck Software End User Software License and Maintenance Agreement. All rights reserved worldwide.
  */
-package com.synopsys.integration
+package com.blackduck.integration
 
+import com.blackduck.integration.utility.BuildFileUtility
+import com.blackduck.integration.utility.VersionUtility
 import com.hierynomus.gradle.license.LicenseBasePlugin
-import com.synopsys.integration.utility.BuildFileUtility
-import com.synopsys.integration.utility.VersionUtility
 import nl.javadude.gradle.plugins.license.LicenseExtension
 import org.apache.commons.lang.StringUtils
 import org.gradle.api.*
@@ -29,7 +29,6 @@ import org.sonarqube.gradle.SonarQubePlugin
 import java.nio.charset.StandardCharsets
 
 abstract class Common implements Plugin<Project> {
-    public static final String EULA_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/EULA.txt'
     public static final String HEADER_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/HEADER.txt'
     public static final String LICENSE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/LICENSE'
     public static final String GIT_IGNORE_LOCATION = 'https://blackducksoftware.github.io/integration-resources/project_init_files/project_default_files/.gitignore'
@@ -47,10 +46,9 @@ abstract class Common implements Plugin<Project> {
     public static final String PROPERTY_JAVA_SOURCE_COMPATIBILITY = 'javaSourceCompatibility'
     public static final String PROPERTY_JAVA_TARGET_COMPATIBILITY = 'javaTargetCompatibility'
     public static final String PROPERTY_JAVA_USE_AUTO_MODULE_NAME = 'javaUseAutoModuleName'
-    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA = 'synopsysOverrideIntegrationEula'
-    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE = 'synopsysOverrideIntegrationLicense'
-    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE = 'synopsysOverrideIntegrationGitIgnore'
-    public static final String PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README = 'synopsysOverrideIntegrationReadme'
+    public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_LICENSE = 'blackduckOverrideIntegrationLicense'
+    public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_GIT_IGNORE = 'blackduckOverrideIntegrationGitIgnore'
+    public static final String PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_README = 'blackduckOverrideIntegrationReadme'
     public static final String PROPERTY_BUILDSCRIPT_DEPENDENCY = 'buildscriptDependency'
     public static final String PROPERTY_EXCLUDES_FROM_TEST_COVERAGE = 'excludesFromTestCoverage'
 
@@ -77,7 +75,7 @@ abstract class Common implements Plugin<Project> {
         project.ext[PROPERTY_BUILDSCRIPT_DEPENDENCY] = BUILDSCRIPT_DEPENDENCY_LOCATION
 
         // assume some reasonable defaults if the environment doesn't provide specific values
-        setExtPropertyOnProject(project, PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://sig-repo.synopsys.com')
+        setExtPropertyOnProject(project, PROPERTY_DOWNLOAD_ARTIFACTORY_URL, 'https://repo.blackduck.com')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_SNAPSHOT_REPO, 'bds-integrations-snapshot')
         setExtPropertyOnProject(project, PROPERTY_ARTIFACTORY_RELEASE_REPO, 'bds-integrations-release')
@@ -87,10 +85,9 @@ abstract class Common implements Plugin<Project> {
         setExtPropertyOnProject(project, PROPERTY_JAVA_SOURCE_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_TARGET_COMPATIBILITY, '1.8')
         setExtPropertyOnProject(project, PROPERTY_JAVA_USE_AUTO_MODULE_NAME, 'false')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, 'false')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, 'false')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
-        setExtPropertyOnProject(project, PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, 'true')
+        setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_LICENSE, 'false')
+        setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_GIT_IGNORE, 'true')
+        setExtPropertyOnProject(project, PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_README, 'true')
 
         setExtPropertyOnProject(project, PROPERTY_TEST_TAGS_TO_INCLUDE, '')
 
@@ -109,7 +106,7 @@ abstract class Common implements Plugin<Project> {
         project.repositories {
             mavenLocal()
             maven { url "${project.ext[PROPERTY_DOWNLOAD_ARTIFACTORY_URL]}/${project.ext[PROPERTY_ARTIFACTORY_RELEASE_REPO]}" }
-            maven { url "https://sig-repo.synopsys.com/bds-bdio-release" }
+            maven { url "https://repo.blackduck.com/bds-bdio-release" }
             mavenCentral()
             maven { url 'https://plugins.gradle.org/m2/' }
         }
@@ -132,7 +129,7 @@ abstract class Common implements Plugin<Project> {
             }
         }
         if (!project.group) {
-            project.group = 'com.synopsys.integration'
+            project.group = 'com.blackduck.integration'
         }
 
         configureForJava(project)
@@ -192,10 +189,9 @@ abstract class Common implements Plugin<Project> {
         Task licenseFormatMainTask = project.tasks.getByName('licenseFormatMain')
         project.tasks.getByName('build').dependsOn(licenseFormatMainTask)
 
-        registerFileInsertionTask(project, 'createEula', 'EULA.txt', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_EULA, EULA_LOCATION)
-        registerFileInsertionTask(project, 'createProjectLicense', 'LICENSE', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
-        registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
-        registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_SYNOPSYS_OVERRIDE_INTEGRATION_README, README_LOCATION)
+        registerFileInsertionTask(project, 'createProjectLicense', 'LICENSE', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_LICENSE, LICENSE_LOCATION)
+        registerFileInsertionTask(project, 'createGitIgnore', '.gitignore', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_GIT_IGNORE, GIT_IGNORE_LOCATION)
+        registerFileInsertionTask(project, 'createReadme', 'README.md', Common.PROPERTY_BLACKDUCK_OVERRIDE_INTEGRATION_README, README_LOCATION)
     }
 
     void configureForReleases(Project project) {

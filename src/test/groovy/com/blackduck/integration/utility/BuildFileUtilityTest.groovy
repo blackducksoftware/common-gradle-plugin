@@ -1,4 +1,12 @@
-package com.synopsys.integration.utility
+/*
+ * common-gradle-plugin
+ *
+ * Copyright (c) 2024 Black Duck Software, Inc.
+ *
+ * Use subject to the terms and conditions of the Black Duck Software End User Software License and Maintenance Agreement. All rights reserved worldwide.
+ */
+package com.blackduck.integration.utility
+
 
 import org.junit.jupiter.api.Test
 
@@ -15,12 +23,12 @@ class BuildFileUtilityTest {
                             mavenCentral()
                             maven { url 'https://plugins.gradle.org/m2/' }
                         }
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -34,12 +42,12 @@ class BuildFileUtilityTest {
                             mavenCentral()
                             maven { url 'https://plugins.gradle.org/m2/' }
                         }
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '23.45.765-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -170,12 +178,12 @@ class BuildFileUtilityTest {
                             mavenCentral()
                             maven { url 'https://plugins.gradle.org/m2/' }
                         }
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = "1.0.1-SNAPSHOT"
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -189,12 +197,12 @@ class BuildFileUtilityTest {
                             mavenCentral()
                             maven { url 'https://plugins.gradle.org/m2/' }
                         }
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '23.45.765-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -216,14 +224,14 @@ class BuildFileUtilityTest {
                     buildscript {
                         apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
                         ////////// START BUILDSCRIPT DEPENDENCY //////////
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.3.2-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.3.2-SNAPSHOT" }
                         
                         ////////// END BUILDSCRIPT DEPENDENCY //////////
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -235,9 +243,9 @@ class BuildFileUtilityTest {
                         apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -261,12 +269,12 @@ class BuildFileUtilityTest {
                             mavenCentral()
                             maven { url 'https://plugins.gradle.org/m2/' }
                         }
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -280,12 +288,12 @@ class BuildFileUtilityTest {
                             mavenCentral()
                             maven { url 'https://plugins.gradle.org/m2/' }
                         }
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.0.1-SNAPSHOT" }
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -307,9 +315,9 @@ class BuildFileUtilityTest {
                         apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -321,9 +329,9 @@ class BuildFileUtilityTest {
                         apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -345,14 +353,14 @@ class BuildFileUtilityTest {
                     buildscript {
                         apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-repositories.gradle", to: buildscript
                         ////////// START BUILDSCRIPT DEPENDENCY //////////
-                        dependencies { classpath "com.synopsys.integration:common-gradle-plugin:1.3.2-SNAPSHOT" }
+                        dependencies { classpath "com.blackduck.integration:common-gradle-plugin:1.3.2-SNAPSHOT" }
                         
                         ////////// END BUILDSCRIPT DEPENDENCY //////////
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -364,9 +372,9 @@ class BuildFileUtilityTest {
                         apply from: 'https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle', to: buildscript
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -390,9 +398,9 @@ class BuildFileUtilityTest {
                         apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", to: buildscript
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -406,9 +414,9 @@ test content
 ////////// END BUILDSCRIPT DEPENDENCY //////////
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -432,9 +440,9 @@ test content
                         apply from: "https://raw.githubusercontent.com/blackducksoftware/integration-resources/master/gradle_common/buildscript-dependencies.gradle", to: buildscript
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
@@ -448,9 +456,9 @@ test content
 ////////// END BUILDSCRIPT DEPENDENCY //////////
                     }
 
-                    group 'com.synopsys.integration'
+                    group 'com.blackduck.integration'
                     version = '1.0.1-SNAPSHOT'
-                    apply plugin: 'com.synopsys.integration.library'
+                    apply plugin: 'com.blackduck.integration.library'
                     dependencies {
                         implementation "log4j:log4j:1.0.1-SNAPSHOT"
                         testCompileOnly group: 'log4j', name: 'log4j', version: '1.0.1-SNAPSHOT'
