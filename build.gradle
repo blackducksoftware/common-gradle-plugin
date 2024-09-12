@@ -28,7 +28,7 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 tasks.withType(GroovyCompile) { options.encoding = 'UTF-8' }
 
 group = 'com.blackduck.integration'
-version = '1.13.1-SNAPSHOT'
+version = '1.13.1'
 description = 'A common plugin for all integration libraries and solutions to use.'
 
 sourceCompatibility = 1.8
