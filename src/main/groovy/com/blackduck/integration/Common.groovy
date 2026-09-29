@@ -16,7 +16,7 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import org.sonarqube.gradle.SonarQubeExtension
+import org.sonarqube.gradle.SonarExtension
 import org.sonarqube.gradle.SonarQubePlugin
 
 import java.util.jar.Manifest
@@ -295,14 +295,16 @@ abstract class Common implements Plugin<Project> {
         def rootProject = project.rootProject
         if (project == rootProject) {
             project.plugins.apply(SonarQubePlugin.class)
-            project.tasks.getByName('sonarqube').dependsOn(project.tasks.getByName('codeCoverageReport'))
+            ['sonar', 'sonarqube'].each {
+                project.tasks.getByName(it).dependsOn(project.tasks.getByName('codeCoverageReport'))
+            }
 
             def sonarExcludes = project.ext[PROPERTY_EXCLUDES_FROM_TEST_COVERAGE]
 
-            SonarQubeExtension sonarQubeExtension = project.extensions.getByName('sonarqube') as SonarQubeExtension
+            SonarExtension sonarExtension = project.extensions.getByName('sonar') as SonarExtension
             def reportFiles = project.fileTree(project.rootDir.absolutePath).include("**/reports/jacoco/report.xml")
 
-            sonarQubeExtension.properties {
+            sonarExtension.properties {
                 property 'sonar.host.url', 'https://sonarcloud.io'
                 property 'sonar.organization', 'black-duck-software'
 
@@ -310,10 +312,10 @@ abstract class Common implements Plugin<Project> {
             }
 
             if (sonarExcludes.size() > 0) {
-                println "Applying the following exclusions to your sonarqube task:"
+                println "Applying the following exclusions to your sonar task:"
                 println "\t" + sonarExcludes
 
-                sonarQubeExtension.properties {
+                sonarExtension.properties {
                     property 'sonar.exclusions', sonarExcludes
                 }
             }
